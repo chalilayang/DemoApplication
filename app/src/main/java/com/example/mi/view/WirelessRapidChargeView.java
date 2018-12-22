@@ -117,7 +117,7 @@ public class WirelessRapidChargeView extends FrameLayout
         stateTipNormal.setIncludeFontPadding(false);
         stateTipNormal.setTextColor(Color.parseColor("#8CFFFFFF"));
         stateTipNormal.setGravity(Gravity.CENTER);
-        stateTipNormal.setText(getResources().getString(R.string.wireless_normal_charge_mode_tip));
+        stateTipNormal.setText(getResources().getString(R.string.normal_charge_mode_tip));
         rlp = new RelativeLayout.LayoutParams(
                 LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         rlp.addRule(RelativeLayout.CENTER_HORIZONTAL);
@@ -130,7 +130,7 @@ public class WirelessRapidChargeView extends FrameLayout
         stateTipCar.setIncludeFontPadding(false);
         stateTipCar.setTextColor(Color.parseColor("#8CFFFFFF"));
         stateTipCar.setGravity(Gravity.CENTER);
-        stateTipCar.setText(getResources().getString(R.string.wireless_rapid_charge_mode_tip));
+        stateTipCar.setText(getResources().getString(R.string.rapid_charge_mode_tip));
         rlp = new RelativeLayout.LayoutParams(
                 LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         rlp.addRule(RelativeLayout.CENTER_HORIZONTAL);
@@ -143,23 +143,24 @@ public class WirelessRapidChargeView extends FrameLayout
         int redId = getResources().getIdentifier(
                 RES_ID_RAPID_CHARGE, "drawable", context.getPackageName());
         rapidIcon.setImageResource(redId);
-        flp = new LayoutParams(
+        rlp = new RelativeLayout.LayoutParams(
                 LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        flp.gravity = Gravity.CENTER;
+        rlp.addRule(RelativeLayout.CENTER_IN_PARENT);
         int paddingTop = (int) (stateTipNormal.getTextSize() * 7);
         rapidIcon.setPadding(0, paddingTop, 0, 0);
-        addView(rapidIcon, flp);
+        contentContainer.addView(rapidIcon, rlp);
 
         carModeIcon = new ImageView(context);
         carModeIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
         redId = getResources().getIdentifier(
                 RES_ID_CAR_MODE_CHARGE, "drawable", context.getPackageName());
         carModeIcon.setImageResource(redId);
-        flp = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        flp.gravity = Gravity.CENTER;
+        rlp = new RelativeLayout.LayoutParams(
+                LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        rlp.addRule(RelativeLayout.CENTER_IN_PARENT);
         paddingTop = (int) (stateTipNormal.getTextSize() * 7);
         carModeIcon.setPadding(0, paddingTop, 0, 0);
-        addView(carModeIcon, flp);
+        contentContainer.addView(carModeIcon, rlp);
 
         flp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         addView(contentContainer, flp);
@@ -293,6 +294,9 @@ public class WirelessRapidChargeView extends FrameLayout
         final ObjectAnimator rapidIconAnimator = ObjectAnimator.ofPropertyValuesHolder(
                 rapidIcon, scaleXProperty, scaleYProperty).setDuration(SWITCH_DURATION);
         rapidIconAnimator.setInterpolator(cubicInterpolator);
+        if (isRapidCharge && !carMode) {
+            rapidIconAnimator.setInterpolator(new OvershootInterpolator(3));
+        }
 
         PropertyValuesHolder scaleXCarProperty = PropertyValuesHolder.ofFloat(
                 SCALE_X, carModeIcon.getScaleX(), carMode ? 1 : 0);
@@ -303,11 +307,16 @@ public class WirelessRapidChargeView extends FrameLayout
         carIconAnimator.setInterpolator(cubicInterpolator);
 
         contentSwitchAnimator = new AnimatorSet();
-        contentSwitchAnimator.playTogether(numberAnimator, tipAnimator, tipRapidAnimator);
-        if (isRapidCharge) {
-            rapidIconAnimator.setInterpolator(new OvershootInterpolator(3));
+        if (carMode && rapidIcon.getScaleX() > 0.0f) {
+            contentSwitchAnimator.playTogether(numberAnimator, tipAnimator, tipRapidAnimator, rapidIconAnimator);
+            contentSwitchAnimator.play(carIconAnimator).after(numberAnimator);
+        } else if (!carMode && isRapidCharge && carModeIcon.getScaleX() > 0.0f) {
+            contentSwitchAnimator.playTogether(numberAnimator, tipAnimator, tipRapidAnimator, carIconAnimator);
+            contentSwitchAnimator.play(rapidIconAnimator).after(numberAnimator);
+        } else {
+            contentSwitchAnimator.playTogether(numberAnimator, tipAnimator, tipRapidAnimator);
+            contentSwitchAnimator.play(carIconAnimator).with(rapidIconAnimator).after(numberAnimator);
         }
-        contentSwitchAnimator.play(carIconAnimator).with(rapidIconAnimator).after(numberAnimator);
         contentSwitchAnimator.start();
     }
 

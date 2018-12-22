@@ -57,8 +57,21 @@ public class MainActivity extends AppCompatActivity {
         countView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                countView.setChargeState(!rapid, !rapid);
-                rapid = !rapid;
+                switch (wirelessChargeState) {
+                    case 0:
+                        countView.setChargeState(false, false);
+                        break;
+                    case 1:
+                        countView.setChargeState(true, false);
+                        break;
+                    case 2:
+                        countView.setChargeState(true, true);
+                        break;
+                }
+                wirelessChargeState += 1;
+                if (wirelessChargeState > 2) {
+                    wirelessChargeState = 0;
+                }
             }
         });
         rapidChargeView = new RapidChargeView(this);
@@ -83,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private @RapidChargeView.CHARGE_STATE int chargeState = RapidChargeView.NORMAL;
-
+    private int wirelessChargeState = 0;
     @OnClick({R.id.button, R.id.button2, R.id.button3})
     public void onViewClicked(View view) {
         switch (view.getId()) {
