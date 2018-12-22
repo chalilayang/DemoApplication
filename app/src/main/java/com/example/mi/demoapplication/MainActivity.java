@@ -65,12 +65,24 @@ public class MainActivity extends AppCompatActivity {
         rapidChargeView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                rapidChargeView.setChargeState(!rapid, !rapid);
-                rapid = !rapid;
+                switch (chargeState) {
+                    case RapidChargeView.NORMAL:
+                        chargeState = RapidChargeView.RAPID;
+                        break;
+                    case RapidChargeView.RAPID:
+                        chargeState = RapidChargeView.SUPER_RAPID;
+                        break;
+                    case RapidChargeView.SUPER_RAPID:
+                        chargeState = RapidChargeView.NORMAL;
+                        break;
+                }
+                rapidChargeView.setChargeState(chargeState);
             }
         });
         countHandler.sendEmptyMessage(0);
     }
+
+    private @RapidChargeView.CHARGE_STATE int chargeState = RapidChargeView.NORMAL;
 
     @OnClick({R.id.button, R.id.button2, R.id.button3})
     public void onViewClicked(View view) {

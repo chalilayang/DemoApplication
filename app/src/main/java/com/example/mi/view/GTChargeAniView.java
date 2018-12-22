@@ -5,7 +5,6 @@ import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.animation.TimeInterpolator;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
@@ -35,7 +34,6 @@ public class GTChargeAniView extends RelativeLayout {
     }
 
     private void init(Context context) {
-        setBackgroundColor(Color.BLACK);
         int resIdChargeIcon = context.getResources().getIdentifier(
                 "charge_icon", "drawable", context.getPackageName());
         int resIdGTIcon = context.getResources().getIdentifier(
@@ -80,7 +78,7 @@ public class GTChargeAniView extends RelativeLayout {
         }
     }
 
-    private void setViewInitState() {
+    public void setViewInitState() {
         chargeIcon.setAlpha(0f);
         GTTailIcon.setAlpha(1.0f);
         GTIcon.setAlpha(1.0f);
