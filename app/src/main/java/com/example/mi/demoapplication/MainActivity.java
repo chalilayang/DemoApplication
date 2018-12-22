@@ -68,9 +68,11 @@ public class MainActivity extends AppCompatActivity {
                         countView.setChargeState(true, true);
                         break;
                 }
-                wirelessChargeState += 1;
+                wirelessChargeState -= 1;
                 if (wirelessChargeState > 2) {
                     wirelessChargeState = 0;
+                } else if (wirelessChargeState < 0) {
+                    wirelessChargeState = 2;
                 }
             }
         });
