@@ -50,7 +50,7 @@ public class WirelessRapidChargeView extends FrameLayout
     private RelativeLayout contentContainer;
     private PercentCountView percentCountView;
     private TextView stateTipNormal;
-    private TextView stateTipCar;
+    private GTChargeAniView gtChargeAniView;
     private ImageView carModeIcon;
     private ImageView rapidIcon;
 
@@ -125,18 +125,13 @@ public class WirelessRapidChargeView extends FrameLayout
         rlp.topMargin = -bottomMargin;
         contentContainer.addView(stateTipNormal, rlp);
 
-        stateTipCar = new TextView(context);
-        stateTipCar.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12.54f);
-        stateTipCar.setIncludeFontPadding(false);
-        stateTipCar.setTextColor(Color.parseColor("#8CFFFFFF"));
-        stateTipCar.setGravity(Gravity.CENTER);
-        stateTipCar.setText(getResources().getString(R.string.rapid_charge_mode_tip));
+        gtChargeAniView = new GTChargeAniView(context);
         rlp = new RelativeLayout.LayoutParams(
                 LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         rlp.addRule(RelativeLayout.CENTER_HORIZONTAL);
         rlp.addRule(RelativeLayout.BELOW, centerAnchorView.getId());
         rlp.topMargin = -bottomMargin;
-        contentContainer.addView(stateTipCar, rlp);
+        contentContainer.addView(gtChargeAniView, rlp);
 
         rapidIcon = new ImageView(context);
         rapidIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
@@ -249,6 +244,7 @@ public class WirelessRapidChargeView extends FrameLayout
             return;
         }
         boolean needShowIcon = isRapidCharge || carMode;
+        stateTipNormal.setText(isRapidCharge ? R.string.rapid_charge_mode_tip : R.string.normal_charge_mode_tip);
         if (needShowIcon) {
             switchToShowIcon();
         } else {
@@ -274,18 +270,43 @@ public class WirelessRapidChargeView extends FrameLayout
         translationYProperty = PropertyValuesHolder.ofFloat(
                 TRANSLATION_Y, stateTipNormal.getTranslationY(), CHARGE_TIP_TRANSLATE_SMALL);
         PropertyValuesHolder alphaProperty = PropertyValuesHolder.ofFloat(
-                ALPHA, stateTipNormal.getAlpha(), !carMode ? 1 : 0);
+                ALPHA, stateTipNormal.getAlpha(), !isRapidCharge ? 1 : 0);
         final ObjectAnimator tipAnimator = ObjectAnimator.ofPropertyValuesHolder(
                 stateTipNormal, alphaProperty, translationYProperty).setDuration(SWITCH_DURATION);
         tipAnimator.setInterpolator(cubicInterpolator);
 
         translationYProperty = PropertyValuesHolder.ofFloat(
-                TRANSLATION_Y, stateTipCar.getTranslationY(), CHARGE_TIP_TRANSLATE_SMALL);
+                TRANSLATION_Y, gtChargeAniView.getTranslationY(), CHARGE_TIP_TRANSLATE_SMALL);
         alphaProperty = PropertyValuesHolder.ofFloat(
-                ALPHA, stateTipCar.getAlpha(), carMode ? 1 : 0);
-        final ObjectAnimator tipRapidAnimator = ObjectAnimator.ofPropertyValuesHolder(
-                stateTipCar, alphaProperty, translationYProperty).setDuration(SWITCH_DURATION);
-        tipRapidAnimator.setInterpolator(cubicInterpolator);
+                ALPHA, gtChargeAniView.getAlpha(), isRapidCharge ? 1 : 0);
+        final ObjectAnimator gtChargeAnimator = ObjectAnimator.ofPropertyValuesHolder(
+                gtChargeAniView, alphaProperty, translationYProperty).setDuration(SWITCH_DURATION);
+        gtChargeAnimator.setInterpolator(cubicInterpolator);
+        gtChargeAnimator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animator) {
+                gtChargeAniView.setVisibility(GONE);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animator) {
+                if (isRapidCharge) {
+                    gtChargeAniView.setViewInitState();
+                    gtChargeAniView.setVisibility(VISIBLE);
+                    gtChargeAniView.animationToShow();
+                }
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animator) {
+                gtChargeAniView.setVisibility(GONE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animator) {
+
+            }
+        });
 
         scaleXProperty = PropertyValuesHolder.ofFloat(
                 SCALE_X, rapidIcon.getScaleX(), !carMode ? 1 : 0);
@@ -308,13 +329,13 @@ public class WirelessRapidChargeView extends FrameLayout
 
         contentSwitchAnimator = new AnimatorSet();
         if (carMode && rapidIcon.getScaleX() > 0.0f) {
-            contentSwitchAnimator.playTogether(numberAnimator, tipAnimator, tipRapidAnimator, rapidIconAnimator);
+            contentSwitchAnimator.playTogether(numberAnimator, tipAnimator, gtChargeAnimator, rapidIconAnimator);
             contentSwitchAnimator.play(carIconAnimator).after(numberAnimator);
         } else if (!carMode && isRapidCharge && carModeIcon.getScaleX() > 0.0f) {
-            contentSwitchAnimator.playTogether(numberAnimator, tipAnimator, tipRapidAnimator, carIconAnimator);
+            contentSwitchAnimator.playTogether(numberAnimator, tipAnimator, gtChargeAnimator, carIconAnimator);
             contentSwitchAnimator.play(rapidIconAnimator).after(numberAnimator);
         } else {
-            contentSwitchAnimator.playTogether(numberAnimator, tipAnimator, tipRapidAnimator);
+            contentSwitchAnimator.playTogether(numberAnimator, tipAnimator, gtChargeAnimator);
             contentSwitchAnimator.play(carIconAnimator).with(rapidIconAnimator).after(numberAnimator);
         }
         contentSwitchAnimator.start();
@@ -337,16 +358,37 @@ public class WirelessRapidChargeView extends FrameLayout
         translationYProperty = PropertyValuesHolder.ofFloat(
                 TRANSLATION_Y, stateTipNormal.getTranslationY(), 0);
         PropertyValuesHolder alphaProperty = PropertyValuesHolder.ofFloat(
-                ALPHA, stateTipNormal.getAlpha(), !carMode ? 1 : 0);
+                ALPHA, stateTipNormal.getAlpha(), 1);
         final ObjectAnimator tipAnimator = ObjectAnimator.ofPropertyValuesHolder(
                 stateTipNormal, alphaProperty, translationYProperty).setDuration(SWITCH_DURATION);
 
         translationYProperty = PropertyValuesHolder.ofFloat(
-                TRANSLATION_Y, stateTipCar.getTranslationY(), 0);
+                TRANSLATION_Y, gtChargeAniView.getTranslationY(), 0);
         alphaProperty = PropertyValuesHolder.ofFloat(
-                ALPHA, stateTipCar.getAlpha(), carMode ? 1 : 0);
-        final ObjectAnimator tipRapidAnimator = ObjectAnimator.ofPropertyValuesHolder(
-                stateTipCar, alphaProperty, translationYProperty).setDuration(SWITCH_DURATION);
+                ALPHA, gtChargeAniView.getAlpha(), 0);
+        final ObjectAnimator gtChargeAnimator = ObjectAnimator.ofPropertyValuesHolder(
+                gtChargeAniView, alphaProperty, translationYProperty).setDuration(SWITCH_DURATION);
+        gtChargeAnimator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animator) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animator) {
+                gtChargeAniView.setVisibility(GONE);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animator) {
+                gtChargeAniView.setVisibility(GONE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animator) {
+
+            }
+        });
 
         PropertyValuesHolder scaleXCarProperty = PropertyValuesHolder.ofFloat(
                 SCALE_X, carModeIcon.getScaleX(), 0);
@@ -364,7 +406,7 @@ public class WirelessRapidChargeView extends FrameLayout
 
         contentSwitchAnimator = new AnimatorSet();
         contentSwitchAnimator.setInterpolator(cubicInterpolator);
-        contentSwitchAnimator.playTogether(numberAnimator, tipAnimator, tipRapidAnimator);
+        contentSwitchAnimator.playTogether(numberAnimator, tipAnimator, gtChargeAnimator);
         contentSwitchAnimator.play(carIconAnimator).with(rapidIconAnimator).with(numberAnimator);
         contentSwitchAnimator.start();
     }
@@ -430,21 +472,21 @@ public class WirelessRapidChargeView extends FrameLayout
         if (isRapidCharge) {
             circleView.setAlpha(0);
             circleRapidView.setAlpha(1);
+            stateTipNormal.setAlpha(0);
+            gtChargeAniView.setViewInitState();
+            gtChargeAniView.setVisibility(VISIBLE);
+            gtChargeAniView.animationToShow();
         } else {
             circleView.setAlpha(1);
             circleRapidView.setAlpha(0);
-        }
-        if (carMode) {
-            stateTipNormal.setAlpha(0);
-            stateTipCar.setAlpha(1);
-        } else {
             stateTipNormal.setAlpha(1);
-            stateTipCar.setAlpha(0);
+            gtChargeAniView.setViewInitState();
+            gtChargeAniView.setVisibility(GONE);
         }
         boolean needShowIcon = isRapidCharge || carMode;
         if (needShowIcon) {
             stateTipNormal.setTranslationY(CHARGE_TIP_TRANSLATE_SMALL);
-            stateTipCar.setTranslationY(CHARGE_TIP_TRANSLATE_SMALL);
+            gtChargeAniView.setTranslationY(CHARGE_TIP_TRANSLATE_SMALL);
             if (carMode) {
                 rapidIcon.setScaleX(0);
                 rapidIcon.setScaleY(0);
@@ -461,7 +503,7 @@ public class WirelessRapidChargeView extends FrameLayout
             percentCountView.setTranslationY(CHARGE_NUMBER_TRANSLATE_SMALL);
         } else {
             stateTipNormal.setTranslationY(0);
-            stateTipCar.setTranslationY(0);
+            gtChargeAniView.setTranslationY(0);
 
             rapidIcon.setScaleX(0);
             rapidIcon.setScaleY(0);
