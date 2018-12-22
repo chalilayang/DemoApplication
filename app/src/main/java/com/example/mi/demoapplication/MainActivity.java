@@ -67,13 +67,13 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 switch (chargeState) {
                     case RapidChargeView.NORMAL:
-                        chargeState = RapidChargeView.RAPID;
-                        break;
-                    case RapidChargeView.RAPID:
                         chargeState = RapidChargeView.SUPER_RAPID;
                         break;
-                    case RapidChargeView.SUPER_RAPID:
+                    case RapidChargeView.RAPID:
                         chargeState = RapidChargeView.NORMAL;
+                        break;
+                    case RapidChargeView.SUPER_RAPID:
+                        chargeState = RapidChargeView.RAPID;
                         break;
                 }
                 rapidChargeView.setChargeState(chargeState);

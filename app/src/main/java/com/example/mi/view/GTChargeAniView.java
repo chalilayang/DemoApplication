@@ -13,7 +13,8 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 public class GTChargeAniView extends RelativeLayout {
-    private static final int SWITCH_DURATION = 800;
+    private static final int ENTER_DURATION = 600;
+    private static final int TAIL_DISMISS_DURATION = 300;
     private ImageView chargeIcon;
     private ImageView GTIcon;
     private ImageView GTTailIcon;
@@ -96,21 +97,21 @@ public class GTChargeAniView extends RelativeLayout {
         PropertyValuesHolder alphaReverseProperty = PropertyValuesHolder.ofFloat(
                 ALPHA, 1, 0);
         final ObjectAnimator chargeIconAnimator = ObjectAnimator.ofPropertyValuesHolder(
-                chargeIcon, alphaProperty).setDuration(SWITCH_DURATION);
+                chargeIcon, alphaProperty).setDuration(ENTER_DURATION);
         chargeIconAnimator.setInterpolator(cubicEaseOutInterpolator);
 
         PropertyValuesHolder translationProperty = PropertyValuesHolder.ofFloat(
                 TRANSLATION_X, -mTranslation, 0);
         final ObjectAnimator GTIconMoveInAnimator = ObjectAnimator.ofPropertyValuesHolder(
-                GTIcon, translationProperty).setDuration(SWITCH_DURATION);
+                GTIcon, translationProperty).setDuration(ENTER_DURATION);
         GTIconMoveInAnimator.setInterpolator(cubicEaseOutInterpolator);
         final ObjectAnimator GTTailIconMoveInAnimator = ObjectAnimator.ofPropertyValuesHolder(
-                GTTailIcon, translationProperty).setDuration(SWITCH_DURATION);
+                GTTailIcon, translationProperty).setDuration(ENTER_DURATION);
         GTTailIconMoveInAnimator.setInterpolator(cubicEaseOutInterpolator);
 
         final ObjectAnimator GTTailIconFadeOutAnimator = ObjectAnimator.ofPropertyValuesHolder(
-                GTTailIcon, alphaReverseProperty).setDuration(SWITCH_DURATION);
-        GTTailIconMoveInAnimator.setInterpolator(cubicEaseOutInterpolator);
+                GTTailIcon, alphaReverseProperty).setDuration(TAIL_DISMISS_DURATION);
+        GTTailIconFadeOutAnimator.setInterpolator(cubicEaseOutInterpolator);
 
         animatorSet = new AnimatorSet();
         animatorSet.playTogether(chargeIconAnimator, GTIconMoveInAnimator, GTTailIconMoveInAnimator);
