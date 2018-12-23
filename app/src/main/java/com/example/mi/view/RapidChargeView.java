@@ -675,14 +675,14 @@ public class RapidChargeView extends FrameLayout
     private final Runnable mDismissRunnable = new Runnable() {
         @Override
         public void run() {
-            if (animationListener != null) {
-                animationListener.onRapidAnimationDismiss(ChargeUtils.NORMAL);
-            }
             Log.i(TAG, "run: mDismissRunnable isScreenOn " + isScreenOn);
             if (isScreenOn) {
                 removeFromWindow("dismiss");
             } else {
                 setVisibility(INVISIBLE);
+            }
+            if (animationListener != null) {
+                animationListener.onRapidAnimationDismiss(ChargeUtils.NORMAL);
             }
         }
     };

@@ -707,11 +707,11 @@ public class WirelessRapidChargeView extends FrameLayout
     private final Runnable mDismissRunnable = new Runnable() {
         @Override
         public void run() {
+            Log.i(TAG, "run: mDismissRunnable isScreenOn " + isScreenOn);
+            removeFromWindow("dismiss");
             if (animationListener != null) {
                 animationListener.onRapidAnimationDismiss(ChargeUtils.WIRELESS);
             }
-            Log.i(TAG, "run: mDismissRunnable isScreenOn " + isScreenOn);
-            removeFromWindow("dismiss");
         }
     };
 
