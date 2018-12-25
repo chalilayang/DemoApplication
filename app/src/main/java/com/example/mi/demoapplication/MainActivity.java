@@ -57,23 +57,24 @@ public class MainActivity extends AppCompatActivity {
         countView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                switch (wirelessChargeState) {
-                    case 0:
-                        countView.setChargeState(false, false);
-                        break;
-                    case 1:
-                        countView.setChargeState(true, false);
-                        break;
-                    case 2:
-                        countView.setChargeState(true, true);
-                        break;
-                }
                 wirelessChargeState -= 1;
                 if (wirelessChargeState > 2) {
                     wirelessChargeState = 0;
                 } else if (wirelessChargeState < 0) {
                     wirelessChargeState = 2;
                 }
+                switch (wirelessChargeState) {
+                    case 0:
+                        countView.setChargeState(WirelessRapidChargeView.NORMAL, false);
+                        break;
+                    case 1:
+                        countView.setChargeState(WirelessRapidChargeView.SUPER_RAPID, true);
+                        break;
+                    case 2:
+                        countView.setChargeState(WirelessRapidChargeView.SUPER_RAPID, false);
+                        break;
+                }
+//                countView.startDismiss("onClick");
             }
         });
         rapidChargeView = new RapidChargeView(this);
@@ -82,16 +83,17 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 switch (chargeState) {
                     case RapidChargeView.NORMAL:
-                        chargeState = RapidChargeView.SUPER_RAPID;
+                        chargeState = RapidChargeView.RAPID;
                         break;
                     case RapidChargeView.RAPID:
-                        chargeState = RapidChargeView.NORMAL;
+                        chargeState = RapidChargeView.SUPER_RAPID;
                         break;
                     case RapidChargeView.SUPER_RAPID:
-                        chargeState = RapidChargeView.RAPID;
+                        chargeState = RapidChargeView.NORMAL;
                         break;
                 }
                 rapidChargeView.setChargeState(chargeState);
+//                rapidChargeView.startDismiss("onClick");
             }
         });
         countHandler.sendEmptyMessage(0);

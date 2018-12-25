@@ -10,7 +10,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.Handler;
-import android.support.annotation.IntDef;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -34,11 +33,12 @@ public class RapidChargeView extends FrameLayout
         Animator.AnimatorListener {
 
     private static final String TAG = "RapidChargeView";
+    private static final String DRAWABLE = "drawable";
     private static final int FRAME_COUNT = 248;
     private static final int FRAME_INTERVAL = 40;
     public static final int ENTER_ANIMATION = 800;
     public static final int ANIMATION_DURATION = FRAME_COUNT * FRAME_INTERVAL;
-    private static final int DISMISS_DURATION = 200;
+    private static final int DISMISS_DURATION = 600;
     private static final int SWITCH_DURATION = 500;
 
     private static final float CHARGE_NUMBER_SCALE_SMALL = 0.85f;
@@ -51,7 +51,7 @@ public class RapidChargeView extends FrameLayout
     private GTChargeAniView gtChargeAniView;
     private ImageView rapidIcon;
     private ImageView superRapidIcon;
-    
+
     private ImageView circleImage;
     private FrameAnimationView circleView;
     private FrameAnimationView dotView;
@@ -75,7 +75,7 @@ public class RapidChargeView extends FrameLayout
     public static final int NORMAL = 0;
     public static final int RAPID = 1;
     public static final int SUPER_RAPID = 2;
-    @IntDef({NORMAL, RAPID, SUPER_RAPID})
+    @android.support.annotation.IntDef({NORMAL, RAPID, SUPER_RAPID})
     @Retention(RetentionPolicy.SOURCE)
     public @interface CHARGE_STATE {}
     private @CHARGE_STATE int mChargeState;
@@ -96,13 +96,13 @@ public class RapidChargeView extends FrameLayout
     private void init(Context context) {
         mChargeState = NORMAL;
         resIdRapidCircle = getResources().getIdentifier(
-                "rapid_charge_circle", "drawable", context.getPackageName());
+                "rapid_charge_circle", DRAWABLE, context.getPackageName());
         resIdNormalCircle = getResources().getIdentifier(
-                "normal_charge_circle", "drawable", context.getPackageName());
+                "normal_charge_circle", DRAWABLE, context.getPackageName());
         int resIdRapidIcon = getResources().getIdentifier(
-                "rapid_charge_icon", "drawable", context.getPackageName());
+                "rapid_charge_icon", DRAWABLE, context.getPackageName());
         int resIdSuperRapidIcon = getResources().getIdentifier(
-                "super_rapid_icon", "drawable", context.getPackageName());
+                "super_rapid_icon", DRAWABLE, context.getPackageName());
         setBackgroundColor(Color.argb(0.85f, 0f,0f,0f));
         hideSystemUI();
         windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
@@ -122,7 +122,7 @@ public class RapidChargeView extends FrameLayout
         centerAnchorView.setId(View.generateViewId());
         contentContainer.addView(centerAnchorView, rlp);
 
-        int bottomMargin = -40;
+        int bottomMargin = -50;
         rlp = new RelativeLayout.LayoutParams(
                 LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         rlp.addRule(RelativeLayout.CENTER_HORIZONTAL);
@@ -241,21 +241,18 @@ public class RapidChargeView extends FrameLayout
     }
 
     private void switchToNormal() {
-        stateTip.setText(R.string.normal_charge_mode_tip);
         circleImage.setImageResource(resIdNormalCircle);
         animateToHideIcon();
     }
 
     private void switchToRapid() {
-        stateTip.setText(R.string.rapid_charge_mode_tip);
         circleImage.setImageResource(resIdNormalCircle);
-        animateToShowIcon(false);
+        animateToShowRapidIcon();
     }
 
     private void switchToSuperRapid() {
-        stateTip.setText(R.string.rapid_charge_mode_tip);
         circleImage.setImageResource(resIdRapidCircle);
-        animateToShowIcon(true);
+        animateToShowSuperRapidIcon();
     }
 
     private void animateToHideIcon() {
@@ -275,7 +272,7 @@ public class RapidChargeView extends FrameLayout
         translationYProperty = PropertyValuesHolder.ofFloat(
                 TRANSLATION_Y, stateTip.getTranslationY(), 0);
         PropertyValuesHolder alphaProperty = PropertyValuesHolder.ofFloat(
-                ALPHA, stateTip.getAlpha(), 1);
+                ALPHA, stateTip.getAlpha(), 0);
         final ObjectAnimator tipAnimator = ObjectAnimator.ofPropertyValuesHolder(
                 stateTip, alphaProperty, translationYProperty).setDuration(SWITCH_DURATION);
 
@@ -284,27 +281,6 @@ public class RapidChargeView extends FrameLayout
         alphaProperty = PropertyValuesHolder.ofFloat(ALPHA, gtChargeAniView.getAlpha(), 0);
         final ObjectAnimator gtTipRapidAnimator = ObjectAnimator.ofPropertyValuesHolder(
                 gtChargeAniView, alphaProperty, translationYProperty).setDuration(SWITCH_DURATION);
-        gtTipRapidAnimator.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animator) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animator) {
-                gtChargeAniView.setVisibility(GONE);
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animator) {
-                gtChargeAniView.setVisibility(GONE);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animator) {
-
-            }
-        });
 
         PropertyValuesHolder scaleXCarProperty = PropertyValuesHolder.ofFloat(
                 SCALE_X, rapidIcon.getScaleX(), 0);
@@ -327,8 +303,8 @@ public class RapidChargeView extends FrameLayout
         contentSwitchAnimator.start();
     }
 
-    private void animateToShowIcon(final boolean isSuperRapidCharge) {
-        Log.d(TAG, "animateToShowIcon() isSuperRapidCharge = [" + isSuperRapidCharge + "]");
+    private void animateToShowRapidIcon() {
+        Log.i(TAG, "animateToShowRapidIcon: ");
         if (contentSwitchAnimator != null) {
             contentSwitchAnimator.cancel();
         }
@@ -345,14 +321,76 @@ public class RapidChargeView extends FrameLayout
         translationYProperty = PropertyValuesHolder.ofFloat(
                 TRANSLATION_Y, stateTip.getTranslationY(), CHARGE_TIP_TRANSLATE_SMALL);
         PropertyValuesHolder alphaProperty = PropertyValuesHolder.ofFloat(
-                ALPHA, stateTip.getAlpha(), !isSuperRapidCharge ? 1 : 0);
+                ALPHA, stateTip.getAlpha(), 1);
         final ObjectAnimator tipAnimator = ObjectAnimator.ofPropertyValuesHolder(
                 stateTip, alphaProperty, translationYProperty).setDuration(SWITCH_DURATION);
         tipAnimator.setInterpolator(cubicInterpolator);
 
         translationYProperty = PropertyValuesHolder.ofFloat(
                 TRANSLATION_Y, gtChargeAniView.getTranslationY(), CHARGE_TIP_TRANSLATE_SMALL);
-        alphaProperty = PropertyValuesHolder.ofFloat(ALPHA, gtChargeAniView.getAlpha(), isSuperRapidCharge ? 1 : 0);
+        alphaProperty = PropertyValuesHolder.ofFloat(ALPHA, gtChargeAniView.getAlpha(), 0);
+        final ObjectAnimator gtTipAnimator = ObjectAnimator.ofPropertyValuesHolder(
+                gtChargeAniView, alphaProperty, translationYProperty).setDuration(SWITCH_DURATION);
+        gtTipAnimator.setInterpolator(cubicInterpolator);
+
+        scaleXProperty = PropertyValuesHolder.ofFloat(
+                SCALE_X, rapidIcon.getScaleX(), 1);
+        scaleYProperty = PropertyValuesHolder.ofFloat(
+                SCALE_Y, rapidIcon.getScaleY(), 1);
+        alphaProperty = PropertyValuesHolder.ofFloat(
+                ALPHA, rapidIcon.getAlpha(), 1);
+        final ObjectAnimator rapidIconAnimator = ObjectAnimator.ofPropertyValuesHolder(
+                rapidIcon, scaleXProperty, scaleYProperty, alphaProperty).setDuration(SWITCH_DURATION);
+        rapidIconAnimator.setInterpolator(cubicInterpolator);
+
+        PropertyValuesHolder scaleXCarProperty = PropertyValuesHolder.ofFloat(
+                SCALE_X, superRapidIcon.getScaleX(), 0);
+        PropertyValuesHolder scaleYCarProperty = PropertyValuesHolder.ofFloat(
+                SCALE_Y, superRapidIcon.getScaleY(), 0);
+        alphaProperty = PropertyValuesHolder.ofFloat(
+                ALPHA, superRapidIcon.getAlpha(), 0);
+        final ObjectAnimator superRapidIconAnimator = ObjectAnimator.ofPropertyValuesHolder(
+                superRapidIcon, scaleXCarProperty, scaleYCarProperty, alphaProperty).setDuration(SWITCH_DURATION);
+        superRapidIconAnimator.setInterpolator(cubicInterpolator);
+        rapidIconAnimator.setInterpolator(new OvershootInterpolator(3));
+
+        contentSwitchAnimator = new AnimatorSet();
+        if (superRapidIcon.getScaleX() > 0) {
+            contentSwitchAnimator.playTogether(numberAnimator, tipAnimator, gtTipAnimator, superRapidIconAnimator);
+            contentSwitchAnimator.play(rapidIconAnimator).after(numberAnimator);
+        } else {
+            contentSwitchAnimator.playTogether(numberAnimator, tipAnimator, gtTipAnimator);
+            contentSwitchAnimator.play(superRapidIconAnimator).with(rapidIconAnimator).after(numberAnimator);
+        }
+        contentSwitchAnimator.start();
+    }
+
+    private void animateToShowSuperRapidIcon() {
+        Log.i(TAG, "animateToShowSuperRapidIcon: ");
+        if (contentSwitchAnimator != null) {
+            contentSwitchAnimator.cancel();
+        }
+        PropertyValuesHolder scaleXProperty = PropertyValuesHolder.ofFloat(
+                SCALE_X, percentCountView.getScaleX(), CHARGE_NUMBER_SCALE_SMALL);
+        PropertyValuesHolder scaleYProperty = PropertyValuesHolder.ofFloat(
+                SCALE_Y, percentCountView.getScaleY(), CHARGE_NUMBER_SCALE_SMALL);
+        PropertyValuesHolder translationYProperty = PropertyValuesHolder.ofFloat(
+                TRANSLATION_Y, percentCountView.getTranslationY(), CHARGE_NUMBER_TRANSLATE_SMALL);
+        final ObjectAnimator numberAnimator = ObjectAnimator.ofPropertyValuesHolder(
+                percentCountView, scaleXProperty, scaleYProperty, translationYProperty).setDuration(SWITCH_DURATION);
+        numberAnimator.setInterpolator(cubicInterpolator);
+
+        translationYProperty = PropertyValuesHolder.ofFloat(
+                TRANSLATION_Y, stateTip.getTranslationY(), CHARGE_TIP_TRANSLATE_SMALL);
+        PropertyValuesHolder alphaProperty = PropertyValuesHolder.ofFloat(
+                ALPHA, stateTip.getAlpha(), 0);
+        final ObjectAnimator tipAnimator = ObjectAnimator.ofPropertyValuesHolder(
+                stateTip, alphaProperty, translationYProperty).setDuration(SWITCH_DURATION);
+        tipAnimator.setInterpolator(cubicInterpolator);
+
+        translationYProperty = PropertyValuesHolder.ofFloat(
+                TRANSLATION_Y, gtChargeAniView.getTranslationY(), CHARGE_TIP_TRANSLATE_SMALL);
+        alphaProperty = PropertyValuesHolder.ofFloat(ALPHA, gtChargeAniView.getAlpha(), 1);
         final ObjectAnimator gtTipAnimator = ObjectAnimator.ofPropertyValuesHolder(
                 gtChargeAniView, alphaProperty, translationYProperty).setDuration(SWITCH_DURATION);
         gtTipAnimator.setInterpolator(cubicInterpolator);
@@ -364,11 +402,9 @@ public class RapidChargeView extends FrameLayout
 
             @Override
             public void onAnimationEnd(Animator animator) {
-                if (isSuperRapidCharge) {
-                    gtChargeAniView.setViewInitState();
-                    gtChargeAniView.setVisibility(VISIBLE);
-                    gtChargeAniView.animationToShow();
-                }
+                gtChargeAniView.setViewInitState();
+                gtChargeAniView.setVisibility(VISIBLE);
+                gtChargeAniView.animationToShow();
             }
 
             @Override
@@ -383,41 +419,34 @@ public class RapidChargeView extends FrameLayout
         });
 
         scaleXProperty = PropertyValuesHolder.ofFloat(
-                SCALE_X, rapidIcon.getScaleX(), !isSuperRapidCharge ? 1 : 0);
+                SCALE_X, rapidIcon.getScaleX(), 0);
         scaleYProperty = PropertyValuesHolder.ofFloat(
-                SCALE_Y, rapidIcon.getScaleY(), !isSuperRapidCharge ? 1 : 0);
+                SCALE_Y, rapidIcon.getScaleY(), 0);
         alphaProperty = PropertyValuesHolder.ofFloat(
-                ALPHA, rapidIcon.getAlpha(), !isSuperRapidCharge ? 1 : 0);
+                ALPHA, rapidIcon.getAlpha(), 0);
         final ObjectAnimator rapidIconAnimator = ObjectAnimator.ofPropertyValuesHolder(
                 rapidIcon, scaleXProperty, scaleYProperty, alphaProperty).setDuration(SWITCH_DURATION);
         rapidIconAnimator.setInterpolator(cubicInterpolator);
 
         PropertyValuesHolder scaleXCarProperty = PropertyValuesHolder.ofFloat(
-                SCALE_X, superRapidIcon.getScaleX(), isSuperRapidCharge ? 1 : 0);
+                SCALE_X, superRapidIcon.getScaleX(), 1);
         PropertyValuesHolder scaleYCarProperty = PropertyValuesHolder.ofFloat(
-                SCALE_Y, superRapidIcon.getScaleY(), isSuperRapidCharge ? 1 : 0);
+                SCALE_Y, superRapidIcon.getScaleY(), 1);
         alphaProperty = PropertyValuesHolder.ofFloat(
-                ALPHA, superRapidIcon.getAlpha(), isSuperRapidCharge ? 1 : 0);
+                ALPHA, superRapidIcon.getAlpha(), 1);
         final ObjectAnimator superRapidIconAnimator = ObjectAnimator.ofPropertyValuesHolder(
                 superRapidIcon, scaleXCarProperty, scaleYCarProperty, alphaProperty).setDuration(SWITCH_DURATION);
         superRapidIconAnimator.setInterpolator(cubicInterpolator);
-        if (isSuperRapidCharge) {
-            superRapidIconAnimator.setInterpolator(new OvershootInterpolator(3));
-        } else {
-            rapidIconAnimator.setInterpolator(new OvershootInterpolator(3));
-        }
+        superRapidIconAnimator.setInterpolator(new OvershootInterpolator(3));
+
         contentSwitchAnimator = new AnimatorSet();
-        if (rapidIcon.getScaleX() > 0 && isSuperRapidCharge) {
+        if (rapidIcon.getScaleX() > 0) {
             contentSwitchAnimator.playTogether(numberAnimator, tipAnimator, gtTipAnimator, rapidIconAnimator);
             contentSwitchAnimator.play(superRapidIconAnimator).after(numberAnimator);
-        } else if (!isSuperRapidCharge && superRapidIcon.getScaleX() > 0) {
-            contentSwitchAnimator.playTogether(numberAnimator, tipAnimator, gtTipAnimator, superRapidIconAnimator);
-            contentSwitchAnimator.play(rapidIconAnimator).after(numberAnimator);
         } else {
             contentSwitchAnimator.playTogether(numberAnimator, tipAnimator, gtTipAnimator);
             contentSwitchAnimator.play(superRapidIconAnimator).with(rapidIconAnimator).after(numberAnimator);
         }
-
         contentSwitchAnimator.start();
     }
 
@@ -484,11 +513,10 @@ public class RapidChargeView extends FrameLayout
         switch (mChargeState) {
             case NORMAL:
                 circleImage.setImageResource(resIdNormalCircle);
-                stateTip.setText(R.string.normal_charge_mode_tip);
                 percentCountView.setScaleX(1.0f);
                 percentCountView.setScaleY(1.0f);
                 percentCountView.setTranslationY(0);
-                stateTip.setAlpha(1.0f);
+                stateTip.setAlpha(0.0f);
                 stateTip.setTranslationY(0);
                 gtChargeAniView.setViewInitState();
                 gtChargeAniView.setVisibility(GONE);
@@ -521,7 +549,7 @@ public class RapidChargeView extends FrameLayout
                 percentCountView.setScaleX(CHARGE_NUMBER_SCALE_SMALL);
                 percentCountView.setScaleY(CHARGE_NUMBER_SCALE_SMALL);
                 percentCountView.setTranslationY(CHARGE_NUMBER_TRANSLATE_SMALL);
-                stateTip.setText(R.string.normal_charge_mode_tip);
+                stateTip.setText(R.string.rapid_charge_mode_tip);
                 stateTip.setAlpha(0.0f);
                 stateTip.setTranslationY(CHARGE_TIP_TRANSLATE_SMALL);
                 gtChargeAniView.setViewInitState();
@@ -610,7 +638,12 @@ public class RapidChargeView extends FrameLayout
         }
         Log.i(TAG, "startDismiss: reason: " + reason);
         handler.removeCallbacks(timeoutDismissJob);
-        PropertyValuesHolder alpha = PropertyValuesHolder.ofFloat(ALPHA,contentContainer.getAlpha(), 0);
+
+        PropertyValuesHolder alpha = PropertyValuesHolder.ofFloat(ALPHA,getAlpha(), 0);
+        final ObjectAnimator bgAlphaAnimator = ObjectAnimator.ofPropertyValuesHolder(
+                this, alpha).setDuration(DISMISS_DURATION);
+
+        alpha = PropertyValuesHolder.ofFloat(ALPHA,contentContainer.getAlpha(), 0);
         PropertyValuesHolder scaleX = PropertyValuesHolder.ofFloat(SCALE_X,contentContainer.getScaleX(), 0);
         PropertyValuesHolder scaleY = PropertyValuesHolder.ofFloat(SCALE_Y,contentContainer.getScaleY(), 0);
         final ObjectAnimator alphaAnimator = ObjectAnimator.ofPropertyValuesHolder(
@@ -630,7 +663,8 @@ public class RapidChargeView extends FrameLayout
 
         dismissAnimatorSet = new AnimatorSet();
         dismissAnimatorSet.setInterpolator(quartOutInterpolator);
-        dismissAnimatorSet.playTogether(alphaAnimator, alphaImageAnimator, circleViewAlphaAnimator);
+        dismissAnimatorSet.playTogether(
+                bgAlphaAnimator, alphaAnimator, alphaImageAnimator, circleViewAlphaAnimator);
         Animator.AnimatorListener animatorListener = new Animator.AnimatorListener() {
 
             @Override

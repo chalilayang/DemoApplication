@@ -1,7 +1,4 @@
 <resources>
     <string name="app_name">DemoApplication</string>
-    <string name="wireless_normal_charge_mode_tip">CHARGEING</string>
-    <string name="wireless_rapid_charge_mode_tip">CHARGE GT WIRELESS</string>
     <string name="rapid_charge_mode_tip">快速充电中</string>
-    <string name="normal_charge_mode_tip">充电中</string>
 </resources>
