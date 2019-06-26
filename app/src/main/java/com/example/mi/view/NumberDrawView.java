@@ -84,6 +84,7 @@ public class NumberDrawView extends View {
             return;
         }
         content = text;
+        invalidate();
         requestLayout();
     }
 

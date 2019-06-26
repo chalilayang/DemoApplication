@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">DemoApplication</string>
     <string name="rapid_charge_mode_tip">快速充电中</string>
+
+    <string name="title_activity_partical">ParticalActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="charge_speed_and_level">正在快速充电：%d%%</string>
+    <string name="title_activity_bottom_sheet">BottomSheetActivity</string>
 </resources>

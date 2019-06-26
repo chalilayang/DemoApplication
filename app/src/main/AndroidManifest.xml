@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.mi.demoapplication">
 
+    <uses-permission android:name="android.permission.RECEIVE_USER_PRESENT" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -9,6 +11,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity
+            android:name=".BottomSheetActivity"
+            android:label="@string/title_activity_bottom_sheet"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -17,7 +23,17 @@
             </intent-filter>
         </activity>
         <activity android:name=".BezierActivity" />
-        <activity android:name=".TextDrawActivity"></activity>
+        <activity android:name=".TextDrawActivity" />
+        <activity
+            android:name=".ParticalActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_partical"
+            android:theme="@style/FullscreenTheme" />
+
+        <service
+            android:name="com.example.mi.BroadcastTestService"
+            android:enabled="true"
+            android:exported="true" />
     </application>
 
 </manifest>
