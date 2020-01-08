@@ -1,35 +1,21 @@
 package com.example.mi.view;
 
 import android.content.Context;
-import android.content.res.Configuration;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Point;
-import android.graphics.PorterDuff;
-import android.graphics.SurfaceTexture;
-import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Choreographer;
-import android.view.TextureView;
-import android.view.WindowManager;
+import android.view.View;
 
-import static com.example.mi.view.WirelessChargeCircleDrawer.WIRELESS_CIRCLE_RES_ARRAY;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
-public class AnimationView extends TextureView implements TextureView.SurfaceTextureListener {
-    private static final int BASE_SCREEN_WIDTH = 1080;
-    private int mViewWidth;
-    private int mViewHeight;
-
-    private WindowManager mWindowManager;
-    private Point mScreenSize;
-    private int mDrawableWidth;
-    private int mDrawableHeight;
-
-    private boolean mSurfaceAvailable;
-    private boolean mPendingStartAnimation;
+public class AnimationView extends View {
+    private static final String TAG = "AnimationView";
     private volatile boolean mAnimationRunning;
-    private WirelessChargeCircleDrawer mCircleDrawer;
-
+    private volatile long mFrameTime;
+    private final List<AnimationDrawer> mDrawerList = new ArrayList<>();
     public AnimationView(Context context) {
         this(context, null);
     }
@@ -40,128 +26,98 @@ public class AnimationView extends TextureView implements TextureView.SurfaceTex
 
     public AnimationView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        init(context);
+        init();
     }
 
-    private void init(Context context) {
-        setOpaque(false);
-        mSurfaceAvailable = false;
+    private void init() {
         mAnimationRunning = false;
-        setSurfaceTextureListener(this);
-
-        Drawable drawable = getResources().getDrawable(WIRELESS_CIRCLE_RES_ARRAY[0]);
-        mDrawableWidth = drawable.getIntrinsicWidth();
-        mDrawableHeight = drawable.getIntrinsicHeight();
-
-        mWindowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        mScreenSize = new Point();
-        mWindowManager.getDefaultDisplay().getRealSize(mScreenSize);
-        updateSizeForScreenSizeChange();
     }
 
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        checkScreenSize();
-    }
-
-    @Override
-    protected void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        checkScreenSize();
-    }
-
-    private void checkScreenSize() {
-        Point point = new Point();
-        mWindowManager.getDefaultDisplay().getRealSize(point);
-        if (!mScreenSize.equals(point.x, point.y)) {
-            mScreenSize.set(point.x, point.y);
-            updateSizeForScreenSizeChange();
-            requestLayout();
-        }
-    }
-
-    private void updateSizeForScreenSizeChange() {
-        int screenWidth = Math.min(mScreenSize.x, mScreenSize.y);
-        float rateWidth = screenWidth * 1.0f / BASE_SCREEN_WIDTH;
-        mViewWidth = (int) (rateWidth * mDrawableWidth);
-        mViewHeight = (int) (rateWidth * mDrawableHeight);
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        setMeasuredDimension(mViewWidth, mViewHeight);
-    }
-
-    public void startAnimation() {
+    private void startAnimation() {
         if (mAnimationRunning) {
             return;
         }
-        if (mSurfaceAvailable) {
-            mAnimationRunning = true;
-            mCircleDrawer = new WirelessChargeCircleDrawer(getContext());
-            mCircleDrawer.startAnimation();
-            Choreographer.getInstance().postFrameCallback(mFrameCallback);
-        } else {
-            mPendingStartAnimation = true;
-        }
+        mAnimationRunning = true;
+        Choreographer.getInstance().postFrameCallback(frameCallback);
     }
 
     public void stopAnimation() {
         mAnimationRunning = false;
-        mPendingStartAnimation = false;
-        Choreographer.getInstance().removeFrameCallback(mFrameCallback);
-        if (mCircleDrawer != null) {
-            mCircleDrawer.release();
-            mCircleDrawer = null;
-        }
+        Choreographer.getInstance().removeFrameCallback(frameCallback);
     }
 
-    private Choreographer.FrameCallback mFrameCallback = new Choreographer.FrameCallback() {
+    private Choreographer.FrameCallback frameCallback = new Choreographer.FrameCallback() {
         @Override
         public void doFrame(long frameTimeNanos) {
+            dispatchDraw(frameTimeNanos);
             if (mAnimationRunning) {
-                dispatchDraw(frameTimeNanos);
                 Choreographer.getInstance().postFrameCallback(this);
             }
         }
     };
 
-    @Override
-    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        mSurfaceAvailable = true;
-        if (mPendingStartAnimation) {
-            startAnimation();
-            mPendingStartAnimation = false;
-        }
-    }
-
-    @Override
-    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {}
-
-    @Override
-    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        return true;
-    }
-
-    @Override
-    public void onSurfaceTextureUpdated(SurfaceTexture surface) {}
-
     private void dispatchDraw(long frameTime) {
-        if (mSurfaceAvailable && mCircleDrawer != null) {
-            mCircleDrawer.onAnimationDraw(this, frameTime);
+        if (!mDrawerList.isEmpty()) {
+            mFrameTime = frameTime;
+            invalidate();
         }
     }
 
-    private void unlockCanvasAndPostSafely(Canvas canvas) {
-        if (mSurfaceAvailable) {
-            unlockCanvasAndPost(canvas);
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        Iterator<AnimationDrawer> iterator = mDrawerList.listIterator();
+        while(iterator.hasNext()) {
+            AnimationDrawer item = iterator.next();
+            if (!item.onAnimationDraw(canvas, mFrameTime)) {
+                item.release();
+                iterator.remove();
+            }
+        }
+        if (mDrawerList.isEmpty()) {
+            stopAnimation();
+        }
+    }
+
+    public boolean hasDrawer() {
+        return !mDrawerList.isEmpty();
+    }
+
+    public void addAnimationDrawer(AnimationDrawer drawer) {
+        if (drawer != null) {
+            for (AnimationDrawer item : mDrawerList) {
+                if (drawer.equals(item)) {
+                    Log.e(TAG, "addAnimationDrawer: duplicate");
+                    return;
+                }
+            }
+            mDrawerList.add(drawer);
+            if (!mAnimationRunning) {
+                startAnimation();
+            }
+        }
+    }
+
+    public void removeAnimationDrawer(AnimationDrawer drawer) {
+        if (drawer != null) {
+            Iterator<AnimationDrawer> iterator = mDrawerList.listIterator();
+            while(iterator.hasNext()) {
+                AnimationDrawer item = iterator.next();
+                if (drawer.equals(item)) {
+                    item.release();
+                    iterator.remove();
+                }
+            }
+            if (mDrawerList.isEmpty()) {
+                stopAnimation();
+            }
         }
     }
 
     public interface AnimationDrawer {
-        void onAnimationDraw(TextureView textureView, long frameTime);
-        default void release() {}
+        default void setRepeatMode(boolean repeate) {}
+        boolean onAnimationDraw(Canvas canvas, long frameTime);
+        default void release() {};
         default void setAnimationListener(AnimationStateListener listener) {}
         interface AnimationStateListener {
             default void onAnimationStart() {}
@@ -170,8 +126,28 @@ public class AnimationView extends TextureView implements TextureView.SurfaceTex
     }
 
     @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (!mDrawerList.isEmpty()) {
+            startAnimation();
+        }
+    }
+
+    @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+        clearDrawer();
         stopAnimation();
+    }
+
+    public void clearDrawer() {
+        if (!mDrawerList.isEmpty()) {
+            Iterator<AnimationDrawer> iterator = mDrawerList.listIterator();
+            while (iterator.hasNext()) {
+                AnimationDrawer item = iterator.next();
+                item.release();
+                iterator.remove();
+            }
+        }
     }
 }

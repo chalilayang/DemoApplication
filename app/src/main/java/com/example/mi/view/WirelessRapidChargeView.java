@@ -513,7 +513,7 @@ public class WirelessRapidChargeView extends FrameLayout
             mZoomAnimator.cancel();
         }
         mZoomAnimator.start();
-        mCircleRapidView.startAnimation();
+//        mCircleRapidView.startAnimation();
         post(new Runnable() {
             @Override
             public void run() {
@@ -716,7 +716,7 @@ public class WirelessRapidChargeView extends FrameLayout
     private final Runnable mDismissRunnable = new Runnable() {
         @Override
         public void run() {
-            mCircleRapidView.stopAnimation();
+//            mCircleRapidView.stopAnimation();
             setComponentTransparent(true); // 设置INVISIBLE或者GONE,则在灭屏状态下启动动画会闪锁屏界面，所以通过设置透明度来实现
             disableTouch(true);
             if (mIsScreenOn) {

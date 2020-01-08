@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">DemoApplication</string>
+    <string name="app_name">DemoApplication32</string>
     <string name="rapid_charge_mode_tip">快速充电中</string>
 
     <string name="title_activity_partical">ParticalActivity</string>

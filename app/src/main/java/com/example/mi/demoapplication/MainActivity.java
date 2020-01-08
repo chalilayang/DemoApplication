@@ -6,11 +6,16 @@ import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
@@ -23,12 +28,16 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 
+import com.example.mi.ApkInfos;
 import com.example.mi.DemoReceiver;
 import com.example.mi.view.GTChargeAniView;
 import com.example.mi.view.RapidChargeView;
 import com.example.mi.view.TextDrawView;
 import com.example.mi.view.WirelessRapidChargeView;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -52,6 +61,8 @@ public class MainActivity extends AppCompatActivity {
     GTChargeAniView gtChargeAniView;
     @BindView(R.id.text_draw_view)
     TextDrawView mTextDrawView;
+    @BindView(R.id.app_icon)
+    ImageView mAppIcon;
     private int count;
     private Handler countHandler = new Handler(Looper.getMainLooper()) {
         @Override
@@ -146,6 +157,34 @@ public class MainActivity extends AppCompatActivity {
         });
 //        animator.start();
         button3.setBackground(getRoundCornerDrawable());
+        startService(new Intent(this, SendNotificationService.class));
+        ApkInfos apkInfos = new ApkInfos(getApplicationContext());
+        List<String> ddd = apkInfos.getAllInstalledApkInfo();
+        for (String name :ddd) {
+            Log.i(TAG, "onCreate: " + name);
+        }
+        mAppIcon.setImageDrawable(apkInfos.ddd(
+                getApplicationContext(), "com.android.contacts",
+                "com.android.contacts.activities.TwelveKeyDialer"));
+    }
+
+    /**
+     * 获取图标 bitmap
+     * @param context
+     */
+    public static synchronized Bitmap getBitmap(Context context) {
+        PackageManager packageManager = null;
+        ApplicationInfo applicationInfo = null;
+        try {
+            packageManager = context.getApplicationContext().getPackageManager();
+            applicationInfo = packageManager.getApplicationInfo("com.tencent.mm", 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            applicationInfo = null;
+        }
+        Drawable d = packageManager.getApplicationIcon(applicationInfo); //xxx根据自己的情况获取drawable
+        BitmapDrawable bd = (BitmapDrawable) d;
+        Bitmap bm = bd.getBitmap();
+        return bm;
     }
 
     private DemoReceiver demoReceiver = new DemoReceiver();
@@ -155,24 +194,23 @@ public class MainActivity extends AppCompatActivity {
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.button:
-                if (!countView.isAttachedToWindow()) {
-                    countView.addToWindow("ddd");
-                } else {
-                    countView.zoomLarge(true);
-                }
+//                if (!countView.isAttachedToWindow()) {
+//                    countView.addToWindow("ddd");
+//                } else {
+//                    countView.zoomLarge(true);
+//                }
                 break;
             case R.id.button2:
 //                startActivity(new Intent(this, TextDrawActivity.class));
-                if (!rapidChargeView.isAttachedToWindow()) {
-                    rapidChargeView.addToWindow("eee");
-                }
-                rapidChargeView.zoomLarge();
+//                if (!rapidChargeView.isAttachedToWindow()) {
+//                    rapidChargeView.addToWindow("eee");
+//                }
+//                rapidChargeView.zoomLarge();
                 break;
             case R.id.button3:
-//                startActivity(new Intent(this, ParticalActivity.class));
+                startActivity(new Intent(this, CrateBitmapActivity.class));
 //                gtChargeAniView.animationToShow();
 //                sendNotification();
-                showInvalidChargerDialog();
                 break;
         }
     }
@@ -189,33 +227,5 @@ public class MainActivity extends AppCompatActivity {
         gd.setColor(Color.WHITE);
         gd.setCornerRadius(10 * getResources().getDisplayMetrics().density);
         return gd;
-    }
-
-    public void sendNotification() {
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        Notification.Builder builder;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {//8.0系统之上
-            NotificationChannel channel = new NotificationChannel(
-                    String.valueOf(1212), "chanel_name", NotificationManager.IMPORTANCE_HIGH);
-            manager.createNotificationChannel(channel);
-            builder = new Notification.Builder(this, String.valueOf(1212));
-        } else {
-            builder = new Notification.Builder(this);
-        }
-        Notification notification = builder
-                .setContentTitle("这是通知标题")
-                .setContentText(String.format(getString(R.string.charge_speed_and_level), 90))
-                .setWhen(System.currentTimeMillis()).setAutoCancel(true)
-                .setTimeoutAfter(1000)
-                .setSmallIcon(R.drawable.ic_battery_20_black_24dp)
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
-                .build();
-        manager.notify(1, notification);
-        countHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                manager.cancel(1);
-            }
-        }, 1000);
     }
 }
