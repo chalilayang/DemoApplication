@@ -4,7 +4,6 @@ import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
-import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -43,7 +42,7 @@ public class WirelessRapidChargeView extends FrameLayout
 
     private static final int NORMAL = 0;
     private static final int SUPER_RAPID = 2;
-    @android.support.annotation.IntDef({NORMAL, SUPER_RAPID})
+    @androidx.annotation.IntDef({NORMAL, SUPER_RAPID})
     @Retention(RetentionPolicy.SOURCE)
     private @interface CHARGE_SPEED {}
     private @CHARGE_SPEED int mChargeSpeed;

@@ -1,6 +1,5 @@
 package com.example.mi;
 
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -12,9 +11,7 @@ import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
 import android.os.UserHandle;
 import android.os.UserManager;
-import android.support.v4.content.ContextCompat;
-import android.text.TextUtils;
-import android.util.Log;
+import androidx.core.content.ContextCompat;
 
 import com.example.mi.demoapplication.R;
 

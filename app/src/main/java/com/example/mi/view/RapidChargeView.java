@@ -4,7 +4,6 @@ import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
-import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Color;
@@ -12,7 +11,6 @@ import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -81,7 +79,7 @@ public class RapidChargeView extends FrameLayout
     public static final int NORMAL = 0;
     public static final int RAPID = 1;
     public static final int SUPER_RAPID = 2;
-    @android.support.annotation.IntDef({NORMAL, RAPID, SUPER_RAPID})
+    @androidx.annotation.IntDef({NORMAL, RAPID, SUPER_RAPID})
     @Retention(RetentionPolicy.SOURCE)
     public @interface CHARGE_SPEED {}
     private @CHARGE_SPEED int mChargeState;
