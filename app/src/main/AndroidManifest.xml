@@ -3,24 +3,22 @@
     package="com.example.mi.demoapplication">
 
     <uses-permission android:name="android.permission.RECEIVE_USER_PRESENT" />
-    <uses-permission android:name="android.permission.VIBRATE" />
-
+    <uses-permission
+        android:name="com.android.systemui.permission.NOTIFICATION" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".CrateBitmapActivity"></activity>
-        <activity android:name=".AodTestActivity"></activity>
-
         <service
-            android:name=".SendNotificationService"
-            android:enabled="true"
-            android:exported="true" />
+            android:name="com.example.mi.MyIntentService"
+            android:exported="false"></service>
 
         <activity
             android:name=".BottomSheetActivity"
+            android:exported="true"
             android:label="@string/title_activity_bottom_sheet"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".MainActivity">
