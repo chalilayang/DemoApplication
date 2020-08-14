@@ -3,6 +3,7 @@ package com.example.mi.demoapplication;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -50,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.button2:
                 break;
             case R.id.button3:
-                sendNotification();
+                startActivity(new Intent(this, AodTestActivity.class));
                 break;
         }
     }

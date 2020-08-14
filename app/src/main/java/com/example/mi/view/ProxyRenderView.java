@@ -21,4 +21,6 @@ public class ProxyRenderView extends TextureView {
         super(context, attrs, defStyle);
 
     }
+
+
 }

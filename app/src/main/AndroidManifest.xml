@@ -30,6 +30,7 @@
         </activity>
         <activity android:name=".BezierActivity" />
         <activity android:name=".TextDrawActivity" />
+        <activity android:name=".AodTestActivity" />
         <activity
             android:name=".ParticalActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"

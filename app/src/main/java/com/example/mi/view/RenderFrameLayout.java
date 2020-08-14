@@ -1,6 +1,7 @@
 package com.example.mi.view;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.SurfaceTexture;
 import android.util.AttributeSet;
 import android.view.Surface;
@@ -8,8 +9,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-
-import java.lang.reflect.Field;
+import android.widget.TextView;
 
 /**
  * Created by chalilayang on 20-8-11 下午9:41.
@@ -37,20 +37,29 @@ public class RenderFrameLayout extends FrameLayout implements TextureView.Surfac
 
     @Override
     public void addView(View child, int index, ViewGroup.LayoutParams params) {
-        if (mTargetView != null || child == null) {
-            return;
-        }
-        mTargetView = child;
-        mTargetView.setLayoutParams(params);
         super.addView(child, index, params);
+    }
+
+    @Override
+    protected void dispatchDraw(Canvas canvas) {
+        super.dispatchDraw(canvas);
+    }
+
+    @Override
+    protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
+        if (child instanceof TextView) {
+            Canvas canvas1 = mSurface.lockCanvas(null);
+            super.drawChild(canvas1, child, drawingTime);
+            mSurface.unlockCanvasAndPost(canvas1);
+            return true;
+        } else {
+            return super.drawChild(canvas, child, drawingTime);
+        }
     }
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
         mSurface = new Surface(surface);
-        if (mTargetView != null && mTargetView.isAttachedToWindow()) {
-            setThreadedRenderSurface(mTargetView, mSurface);
-        }
     }
 
     @Override
@@ -64,48 +73,4 @@ public class RenderFrameLayout extends FrameLayout implements TextureView.Surfac
 
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {}
-
-    private static void setThreadedRenderSurface(View targetView, Surface surface) {
-        try {
-            Object attachInfo = getObjectField(targetView, "mAttachInfo");
-            if (attachInfo != null) {
-                Object threadedRender = getObjectField(
-                        attachInfo,
-                        Class.forName("android.view.View.AttachInfo"), "mThreadedRenderer");
-                if (threadedRender != null) {
-
-                }
-            }
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static Object getObjectField(Object target, Class<?> clazz, String field) throws NoSuchFieldException, SecurityException,
-            IllegalArgumentException, IllegalAccessException {
-        Field declaredField = clazz.getDeclaredField(field);
-        declaredField.setAccessible(true);
-        return declaredField.get(target);
-    }
-
-    public static void setObjectField(
-            Object target, String field, Object value) throws NoSuchFieldException, SecurityException,
-            IllegalArgumentException, IllegalAccessException {
-        Class<? extends Object> clazz = target.getClass();
-        Field declaredField = clazz.getDeclaredField(field);
-        declaredField.setAccessible(true);
-        declaredField.set(target, value);
-    }
-
-    public static Object getObjectField(Object target, String field) throws NoSuchFieldException, SecurityException,
-            IllegalArgumentException, IllegalAccessException {
-        Class<? extends Object> clazz = target.getClass();
-        Field declaredField = clazz.getDeclaredField(field);
-        declaredField.setAccessible(true);
-        return declaredField.get(target);
-    }
 }
