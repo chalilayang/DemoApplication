@@ -19,8 +19,6 @@ public class ProxyRenderView extends TextureView {
 
     public ProxyRenderView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-
+        setOpaque(false);
     }
-
-
 }
