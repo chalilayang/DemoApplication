@@ -9,23 +9,21 @@
 package com.particles.android;
 
 import android.app.Activity;
-import android.app.ActivityManager;
-import android.content.Context;
-import android.content.pm.ConfigurationInfo;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
-import android.os.Build;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import com.example.mi.demoapplication.R;
+import com.example.mi.view.GlTextureView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class ParticlesActivity extends Activity {
-    @BindView(R.id.gl_surface_view)
+    //    @BindView(R.id.gl_surface_view)
     GLSurfaceView glSurfaceView;
+    //    @BindView(R.id.gl_texture_view)
+    GlTextureView glTextureView;
     private boolean rendererSet = false;
 
     @Override
@@ -34,13 +32,26 @@ public class ParticlesActivity extends Activity {
 
         setContentView(R.layout.gl_layout);
         ButterKnife.bind(this);
-        final ParticlesRenderer particlesRenderer = new ParticlesRenderer(this);
-        glSurfaceView.setEGLContextClientVersion(2);
-        // Assign our renderer.
-        glSurfaceView.setZOrderOnTop(true);
-        glSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-        glSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 0, 0);
-        glSurfaceView.setRenderer(particlesRenderer);
+
+//        glSurfaceView = findViewById(R.id.gl_surface_view);
+        glTextureView = findViewById(R.id.gl_texture_view);
+
+        if (glSurfaceView != null) {
+            final ParticlesRenderer particlesRenderer = new ParticlesRenderer(this);
+            glSurfaceView.setEGLContextClientVersion(2);
+            glSurfaceView.setZOrderOnTop(true);
+            glSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+            glSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 0, 0);
+            glSurfaceView.setRenderer(particlesRenderer);
+        }
+
+        if (glTextureView != null) {
+            final ParticlesRenderer particlesRenderer2 = new ParticlesRenderer(this);
+            glTextureView.setEGLContextClientVersion(2);
+            glTextureView.setEGLConfigChooser(8, 8, 8, 8, 8, 0);
+            glTextureView.setRenderer(particlesRenderer2);
+        }
+
         rendererSet = true;
     }
 
@@ -49,7 +60,12 @@ public class ParticlesActivity extends Activity {
         super.onPause();
 
         if (rendererSet) {
-            glSurfaceView.onPause();
+            if (glSurfaceView != null) {
+                glSurfaceView.onPause();
+            }
+            if (glTextureView != null) {
+                glTextureView.onPause();
+            }
         }
     }
 
@@ -58,7 +74,12 @@ public class ParticlesActivity extends Activity {
         super.onResume();
 
         if (rendererSet) {
-            glSurfaceView.onResume();
+            if (glSurfaceView != null) {
+                glSurfaceView.onResume();
+            }
+            if (glTextureView != null) {
+                glTextureView.onResume();
+            }
         }
     }
 }
