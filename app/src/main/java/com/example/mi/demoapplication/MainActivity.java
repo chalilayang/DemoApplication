@@ -17,6 +17,7 @@ import android.widget.EditText;
 
 import com.example.mi.view.GTChargeAniView;
 import com.example.mi.view.TextDrawView;
+import com.particles.android.ParticlesActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -51,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.button2:
                 break;
             case R.id.button3:
-                startActivity(new Intent(this, AodTestActivity.class));
+                startActivity(new Intent(this, ParticlesActivity.class));
                 break;
         }
     }

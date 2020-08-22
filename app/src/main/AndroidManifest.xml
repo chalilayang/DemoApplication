@@ -36,7 +36,10 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_partical"
             android:theme="@style/FullscreenTheme" />
-
+        <activity
+            android:name="com.particles.android.ParticlesActivity"
+            android:label="@string/app_name" >
+        </activity>
         <service
             android:name="com.example.mi.BroadcastTestService"
             android:enabled="true"
