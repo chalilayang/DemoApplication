@@ -1,14 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-<!--    <android.opengl.GLSurfaceView-->
-<!--        android:id="@+id/gl_surface_view"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="300dp"/>-->
+    <android.opengl.GLSurfaceView
+        android:id="@+id/gl_surface_view"
+        android:layout_width="match_parent"
+        android:layout_gravity="top"
+        android:layout_height="300dp"/>
     <com.example.mi.view.GlTextureView
         android:id="@+id/gl_texture_view"
         android:layout_width="match_parent"
+        android:layout_gravity="bottom"
         android:layout_height="300dp"/>
-</LinearLayout>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="40dp"
+        android:textColor="@color/colorAccent"
+        android:layout_gravity="bottom"
+        android:text="@string/bottom_sheet_behavior"/>
+</FrameLayout>

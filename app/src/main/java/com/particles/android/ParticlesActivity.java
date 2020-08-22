@@ -33,7 +33,7 @@ public class ParticlesActivity extends Activity {
         setContentView(R.layout.gl_layout);
         ButterKnife.bind(this);
 
-//        glSurfaceView = findViewById(R.id.gl_surface_view);
+        glSurfaceView = findViewById(R.id.gl_surface_view);
         glTextureView = findViewById(R.id.gl_texture_view);
 
         if (glSurfaceView != null) {
