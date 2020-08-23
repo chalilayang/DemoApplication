@@ -26,7 +26,7 @@ public class GLProgressBar extends ProgressBar implements IRendedView {
 
 	public GLProgressBar(Context context) {
 		super(context);
-		setLayoutParams(new LayoutParams(400, 400));
+		setLayoutParams(new LayoutParams(800, 800));
 	}
 
 	Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
