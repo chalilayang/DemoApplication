@@ -84,12 +84,4 @@ public class ShaderProgram {
     public int getTextureCoordinateLocation() {
         return aTextureCoordinateLocation;
     }
-
-    public int getExternalTextureLocation() {
-        return uExternalTextureLocation;
-    }
-
-    public int getTextureTransformLocation() {
-        return uTextureTransformLocation;
-    }
 }

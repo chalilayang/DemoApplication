@@ -31,10 +31,10 @@ public class TextureRenderer implements GLSurfaceView.Renderer {
     };
 
     private float mTextureCoordinate[] = {
-            0.0f, 1.0f,
-            1.0f, 1.0f,
-            0.0f, 0.0f,
-            1.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 1.0f,
+            1.0f, 1.0f, 0.0f, 1.0f,
+            0.0f, 0.0f, 0.0f, 1.0f,
+            1.0f, 0.0f, 0.0f, 1.0f,
     };
 
     private SurfaceTexture mSurfaceTexture;
@@ -111,7 +111,7 @@ public class TextureRenderer implements GLSurfaceView.Renderer {
         mPositionArray.setVertexAttribPointer(
                 0, program.getPositionLocation(), 2, 0);
         mTextureCoordinateArray.setVertexAttribPointer(
-                0, program.getTextureCoordinateLocation(), 2, 0);
+                0, program.getTextureCoordinateLocation(), 4, 0);
     }
 
     public Canvas lockCanvas(Rect dirty) {

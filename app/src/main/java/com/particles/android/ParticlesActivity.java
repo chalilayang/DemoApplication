@@ -45,7 +45,7 @@ public class ParticlesActivity extends Activity {
         ButterKnife.bind(this);
 
         glSurfaceView = findViewById(R.id.gl_surface_view);
-        glTextureView = findViewById(R.id.gl_texture_view);
+
 
         if (glSurfaceView != null) {
             final ParticlesRenderer particlesRenderer = new ParticlesRenderer(this);
@@ -56,6 +56,7 @@ public class ParticlesActivity extends Activity {
             glSurfaceView.setRenderer(particlesRenderer);
         }
 
+        glTextureView = findViewById(R.id.gl_texture_view);
         if (glTextureView != null) {
             final TextureRenderer particlesRenderer2 = new TextureRenderer(this);
             glTextureView.setEGLContextClientVersion(2);
