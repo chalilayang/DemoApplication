@@ -53,7 +53,7 @@ public class ViewRenderer implements GLSurfaceView.Renderer {
 			surface = new Surface(surfaceTexture);
 			rendererView.configSurface(surface);
 			rendererView.configSurfaceTexture(surfaceTexture);
-			mDirectDrawer = new DirectDrawer(glSurfaceTex);
+			mDirectDrawer = new DirectDrawer(glSurfaceTex, context);
 		}
 	}
 

@@ -48,8 +48,8 @@ public class ShaderProgram {
         aTextureCoordinateLocation = glGetAttribLocation(program, A_TEX_COORDINATES_LOCATION);
     }
 
-    protected ShaderProgram(Context context, int vertexShaderResourceId,
-        int fragmentShaderResourceId) {
+    protected ShaderProgram(
+            Context context, int vertexShaderResourceId, int fragmentShaderResourceId) {
         program = ShaderHelper.buildProgram(
             TextResourceReader.readTextFileFromResource(context, vertexShaderResourceId),
             TextResourceReader.readTextFileFromResource(context, fragmentShaderResourceId));
