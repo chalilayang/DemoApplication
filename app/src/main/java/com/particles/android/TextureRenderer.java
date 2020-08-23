@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
+import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
 import android.view.Surface;
@@ -16,8 +17,10 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
+import static android.opengl.GLES20.glActiveTexture;
 import static android.opengl.GLES20.glClear;
 import static android.opengl.GLES20.glClearColor;
+import static android.opengl.GLES20.glDeleteTextures;
 import static android.opengl.GLES20.glViewport;
 
 public class TextureRenderer implements GLSurfaceView.Renderer {
@@ -60,7 +63,7 @@ public class TextureRenderer implements GLSurfaceView.Renderer {
         Log.i(TAG, "onSurfaceCreated: ");
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         if (mSurfaceTexture == null) {
-            if (TextureHelper.createExternalSurfaceTexture(mTextureIds)) {
+            if (TextureHelper.createExternalSurfaceTexture(mTextureIds, 1080, 1080)) {
                 mSurfaceTexture = new SurfaceTexture(mTextureIds[0]);
                 mSurfaceTexture.setDefaultBufferSize(1080, 1080);
                 mSurfaceTexture.setOnFrameAvailableListener(this::onFrameAvailable);
@@ -74,12 +77,23 @@ public class TextureRenderer implements GLSurfaceView.Renderer {
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         Log.i(TAG, "onSurfaceChanged: ");
         glViewport(0, 0, width, height);
+        releaseSurface();
+        if (mSurfaceTexture == null) {
+            if (TextureHelper.createExternalSurfaceTexture(mTextureIds, width, height)) {
+                mSurfaceTexture = new SurfaceTexture(mTextureIds[0]);
+                mSurfaceTexture.setDefaultBufferSize(width, height);
+                mSurfaceTexture.setOnFrameAvailableListener(this::onFrameAvailable);
+                mSurface = new Surface(mSurfaceTexture);
+            }
+        }
     }
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        Log.i(TAG, "onDrawFrame: ");
-        glClear(GL_COLOR_BUFFER_BIT);
+        GLES20.glClearColor(0.0f, 1.0f, 0.0f, 0.0f);
+        GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         if (mFrameAvailable) {
             mSurfaceTexture.updateTexImage();
             mSurfaceTexture.getTransformMatrix(mTextureTransform);
@@ -115,5 +129,17 @@ public class TextureRenderer implements GLSurfaceView.Renderer {
         if (mSurface != null) {
             mSurface.unlockCanvasAndPost(canvas);
         }
+    }
+
+    public void releaseSurface(){
+        if (mSurface != null) {
+            mSurface.release();
+        }
+        if (mSurfaceTexture != null) {
+            mSurfaceTexture.release();
+        }
+        glDeleteTextures(0, mTextureIds, 1);
+        mSurface = null;
+        mSurfaceTexture = null;
     }
 }
