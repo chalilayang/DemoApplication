@@ -19,6 +19,8 @@ import com.example.mi.view.GlTextureView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import static android.opengl.GLSurfaceView.RENDERMODE_WHEN_DIRTY;
+
 public class ParticlesActivity extends Activity {
     //    @BindView(R.id.gl_surface_view)
     GLSurfaceView glSurfaceView;
@@ -46,10 +48,11 @@ public class ParticlesActivity extends Activity {
         }
 
         if (glTextureView != null) {
-            final ParticlesRenderer particlesRenderer2 = new ParticlesRenderer(this);
+            final TextureRenderer particlesRenderer2 = new TextureRenderer(this);
             glTextureView.setEGLContextClientVersion(2);
             glTextureView.setEGLConfigChooser(8, 8, 8, 8, 8, 0);
             glTextureView.setRenderer(particlesRenderer2);
+            glTextureView.setRenderMode(RENDERMODE_WHEN_DIRTY);
         }
 
         rendererSet = true;

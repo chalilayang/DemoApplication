@@ -1,8 +1,7 @@
-#version 120
 uniform mat4 u_TextureTransform;
 
 attribute vec4 a_TextureCoordinates;
-attribute vec3 a_Position;
+attribute vec4 a_Position;
 
 varying vec2 v_TexCoordinate;
 

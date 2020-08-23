@@ -44,7 +44,7 @@ public class ParticleShaderProgram extends ShaderProgram {
         uMatrixLocation = glGetUniformLocation(program, U_MATRIX);
         uTimeLocation = glGetUniformLocation(program, U_TIME);
         uTextureUnitLocation = glGetUniformLocation(program, U_TEXTURE_UNIT);
-        aPositionLocation = glGetAttribLocation(program, A_POSITION);
+        aPositionLocation = glGetAttribLocation(program, A_POSITION_LOCATION);
         aColorLocation = glGetAttribLocation(program, A_COLOR);
         aDirectionVectorLocation = glGetAttribLocation(program, A_DIRECTION_VECTOR);
         aParticleStartTimeLocation = glGetAttribLocation(program, A_PARTICLE_START_TIME);

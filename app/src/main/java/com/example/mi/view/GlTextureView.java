@@ -22,6 +22,8 @@ import javax.microedition.khronos.egl.EGLSurface;
 import javax.microedition.khronos.opengles.GL;
 import javax.microedition.khronos.opengles.GL10;
 
+import static android.opengl.GLSurfaceView.RENDERMODE_CONTINUOUSLY;
+import static android.opengl.GLSurfaceView.RENDERMODE_WHEN_DIRTY;
 import static javax.microedition.khronos.egl.EGL10.EGL_BAD_ACCESS;
 import static javax.microedition.khronos.egl.EGL10.EGL_BAD_ALLOC;
 import static javax.microedition.khronos.egl.EGL10.EGL_BAD_ATTRIBUTE;
@@ -47,8 +49,6 @@ public class GlTextureView extends TextureView implements TextureView.SurfaceTex
     private final static boolean LOG_PAUSE_RESUME = false;
     private final static boolean LOG_SURFACE = false;
     private final static boolean LOG_EGL = false;
-    public final static int RENDERMODE_WHEN_DIRTY = 0;
-    public final static int RENDERMODE_CONTINUOUSLY = 1;
     private static final GLThreadManager sGLThreadManager = new GLThreadManager();
 
     private final WeakReference<GlTextureView> mThisWeakRef = new WeakReference<>(this);
