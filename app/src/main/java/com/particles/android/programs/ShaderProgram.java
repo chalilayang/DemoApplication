@@ -19,15 +19,9 @@ import static android.opengl.GLES20.glUseProgram;
 import android.content.Context;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
-import android.util.Log;
-
 import com.example.mi.demoapplication.R;
 import com.particles.android.util.ShaderHelper;
 import com.particles.android.util.TextResourceReader;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.ShortBuffer;
 
 public class ShaderProgram {
     private static final String TAG = "ShaderProgram";
@@ -46,24 +40,12 @@ public class ShaderProgram {
 
     protected int uTextureTransformLocation;
 
-    private ShortBuffer drawOrderBuffer;
-    private static short sDrawOrder[] = {
-            0, 1, 2,
-            0, 2, 3
-    };
-
     public ShaderProgram(Context context) {
         this(context, R.raw.vertext_sharder, R.raw.fragment_shader);
         uTextureTransformLocation = glGetUniformLocation(program, U_TEX_TRANSFORM_LOCATION);
         uExternalTextureLocation = glGetUniformLocation(program, U_EXTERNAL_TEX_LOCATION);
         aPositionLocation = glGetAttribLocation(program, A_POSITION_LOCATION);
         aTextureCoordinateLocation = glGetAttribLocation(program, A_TEX_COORDINATES_LOCATION);
-
-        ByteBuffer orderByteBuffer = ByteBuffer.allocateDirect(sDrawOrder.length * 2);
-        orderByteBuffer.order(ByteOrder.nativeOrder());
-        drawOrderBuffer = orderByteBuffer.asShortBuffer();
-        drawOrderBuffer.put(sDrawOrder);
-        drawOrderBuffer.position(0);
     }
 
     protected ShaderProgram(Context context, int vertexShaderResourceId,
@@ -71,7 +53,6 @@ public class ShaderProgram {
         program = ShaderHelper.buildProgram(
             TextResourceReader.readTextFileFromResource(context, vertexShaderResourceId),
             TextResourceReader.readTextFileFromResource(context, fragmentShaderResourceId));
-        Log.i(TAG, "ShaderProgram: " + program);
     }
 
     public void setMatrix(float[] matrix) {
@@ -93,10 +74,7 @@ public class ShaderProgram {
     }
 
     public void draw() {
-        if (drawOrderBuffer != null) {
-            GLES20.glDrawElements(
-                    GLES20.GL_TRIANGLES, sDrawOrder.length, GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer);
-        }
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
     }
 
     public int getPositionLocation() {

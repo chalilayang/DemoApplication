@@ -9,9 +9,15 @@
 package com.particles.android;
 
 import android.app.Activity;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.PixelFormat;
+import android.graphics.Rect;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 
 import com.example.mi.demoapplication.R;
 import com.example.mi.view.GlTextureView;
@@ -19,9 +25,10 @@ import com.example.mi.view.GlTextureView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-import static android.opengl.GLSurfaceView.RENDERMODE_WHEN_DIRTY;
+import static android.opengl.GLSurfaceView.RENDERMODE_CONTINUOUSLY;
 
 public class ParticlesActivity extends Activity {
+    private static final String TAG = "ParticlesActivity";
     //    @BindView(R.id.gl_surface_view)
     GLSurfaceView glSurfaceView;
     //    @BindView(R.id.gl_texture_view)
@@ -50,9 +57,19 @@ public class ParticlesActivity extends Activity {
         if (glTextureView != null) {
             final TextureRenderer particlesRenderer2 = new TextureRenderer(this);
             glTextureView.setEGLContextClientVersion(2);
-            glTextureView.setEGLConfigChooser(8, 8, 8, 8, 8, 0);
+            glTextureView.setEGLConfigChooser(8, 8, 8, 8, 0, 0);
             glTextureView.setRenderer(particlesRenderer2);
-            glTextureView.setRenderMode(RENDERMODE_WHEN_DIRTY);
+            glTextureView.setRenderMode(RENDERMODE_CONTINUOUSLY);
+            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paint.setColor(Color.BLUE);
+            paint.setStrokeWidth(10f);
+            new Handler().postDelayed(() -> {
+                Canvas canvas = particlesRenderer2.lockCanvas(new Rect(0, 0, 5, 5));
+                Rect rect = canvas.getClipBounds();
+                Log.i(TAG, "lockCanvas: " + rect.toString() + " " + canvas.getWidth());
+                canvas.drawRect(0, 0, 15f, 15f, paint);
+                particlesRenderer2.unlockCanvasAndPost(canvas);
+            }, 1000);
         }
 
         rendererSet = true;

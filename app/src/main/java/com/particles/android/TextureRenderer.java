@@ -24,17 +24,17 @@ public class TextureRenderer implements GLSurfaceView.Renderer {
 
     private static final String TAG = "TextureRenderer";
     private static float sSquareCoordinate[] = {
-            -1.0f, 1.0f, 0.0f, 1.0f,  // top left
-            -1.0f, -1.0f, 0.0f, 1.0f,  // bottom left
-            1.0f, -1.0f, 0.0f, 1.0f,    // bottom right
-            1.0f, 1.0f, 0.0f, 1.0f     // top right
+            -1.0f, -1.0f,
+            1.0f, -1.0f,
+            -1.0f, 1.0f,
+            1.0f, 1.0f,
     };
 
     private float mTextureCoordinate[] = {
-            0.0f, 1.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 0.0f, 1.0f,
-            1.0f, 0.0f, 0.0f, 1.0f,
-            1.0f, 1.0f, 0.0f, 1.0f
+            0.0f, 1.0f,
+            1.0f, 1.0f,
+            0.0f, 0.0f,
+            1.0f, 0.0f,
     };
 
     private SurfaceTexture mSurfaceTexture;
@@ -62,6 +62,7 @@ public class TextureRenderer implements GLSurfaceView.Renderer {
         if (mSurfaceTexture == null) {
             if (TextureHelper.createExternalSurfaceTexture(mTextureIds)) {
                 mSurfaceTexture = new SurfaceTexture(mTextureIds[0]);
+                mSurfaceTexture.setDefaultBufferSize(1080, 1080);
                 mSurfaceTexture.setOnFrameAvailableListener(this::onFrameAvailable);
                 mSurface = new Surface(mSurfaceTexture);
             }
@@ -99,7 +100,7 @@ public class TextureRenderer implements GLSurfaceView.Renderer {
         mPositionArray.setVertexAttribPointer(
                 0, program.getPositionLocation(), 2, 0);
         mTextureCoordinateArray.setVertexAttribPointer(
-                0, program.getTextureCoordinateLocation(), 4, 0);
+                0, program.getTextureCoordinateLocation(), 2, 0);
     }
 
     public Canvas lockCanvas(Rect dirty) {
