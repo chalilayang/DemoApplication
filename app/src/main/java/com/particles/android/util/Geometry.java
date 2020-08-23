@@ -8,8 +8,6 @@
 ***/
 package com.particles.android.util;
 
-import android.util.FloatMath;
-
 public class Geometry {                
     public static class Point {
         public final float x, y, z;

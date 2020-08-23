@@ -22,7 +22,11 @@ import static android.opengl.GLUtils.texImage2D;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.SurfaceTexture;
+import android.opengl.GLES11Ext;
+import android.opengl.GLES20;
 import android.util.Log;
+
 public class TextureHelper {
     private static final String TAG = "TextureHelper";
 
@@ -95,5 +99,18 @@ public class TextureHelper {
         glBindTexture(GL_TEXTURE_2D, 0);
 
         return textureObjectIds[0];        
+    }
+
+    public static boolean createExternalSurfaceTexture(int[] textures) {
+        if (textures == null || textures.length <=0) {
+            return false;
+        }
+        GLES20.glGenTextures(1, textures, 0);
+        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textures[0]);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+        return true;
     }
 }
