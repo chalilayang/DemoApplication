@@ -6,7 +6,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
 import android.view.Surface.OutOfResourcesException;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ProgressBar;
@@ -50,8 +49,6 @@ public class GLProgressBar extends ProgressBar {
 			} catch (OutOfResourcesException e) {
 				e.printStackTrace();
 			}
-		} else {
-			super.onDraw(canvas);
 		}
 	}
 
