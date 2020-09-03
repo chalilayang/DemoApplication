@@ -1,6 +1,9 @@
 package com.render.demo;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
@@ -28,9 +31,8 @@ public class ViewRenderer implements GLSurfaceView.Renderer, SurfaceTexture.OnFr
 			1.0f, 0.0f,
 	};
 
-	int glSurfaceTex;
-	Context context;
-	private IRendedView rendererView;
+	private int glSurfaceTex;
+	private Context context;
 	private SurfaceTexture surfaceTexture = null;
 	private Surface surface;
 
@@ -41,9 +43,8 @@ public class ViewRenderer implements GLSurfaceView.Renderer, SurfaceTexture.OnFr
 
 	private volatile boolean needRedraw;
 
-	public ViewRenderer(Context context, IRendedView rendererView) {
+	public ViewRenderer(Context context) {
 		this.context = context;
-		this.rendererView = rendererView;
 		mPositionArray = new VertexArray(sSquareCoordinate);
 		mTextureCoordinateArray = new VertexArray(mTextureCoordinate);
 		needRedraw = false;
@@ -81,13 +82,26 @@ public class ViewRenderer implements GLSurfaceView.Renderer, SurfaceTexture.OnFr
 			surfaceTexture.setOnFrameAvailableListener(this);
 			surfaceTexture.setDefaultBufferSize(width, height);
 			surface = new Surface(surfaceTexture);
-			if (rendererView != null) {
-				rendererView.configSurface(surface);
-				rendererView.configSurfaceTexture(surfaceTexture);
-			}
-
 			mProgram = new ShaderProgram(context);
 		}
+	}
+
+	public boolean isAvailable() {
+		return surface != null;
+	}
+
+	public Canvas lockCanvas(boolean hardware) {
+		if (surface == null) {
+			return null;
+		}
+		Canvas canvasDrawing
+				= hardware ? surface.lockHardwareCanvas() : surface.lockCanvas(null);
+		canvasDrawing.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+		return canvasDrawing;
+	}
+
+	public void unlockCanvasAndPost(Canvas canvas) {
+		surface.unlockCanvasAndPost(canvas);
 	}
 
 	@Override
