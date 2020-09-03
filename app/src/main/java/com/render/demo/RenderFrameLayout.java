@@ -1,10 +1,7 @@
 package com.render.demo;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -14,7 +11,6 @@ import com.example.mi.view.GlTextureView;
  * Created by chalilayang on 20-8-11 下午9:41.
  **/
 public class RenderFrameLayout extends FrameLayout {
-    private static final String TAG = "RenderFrameLayout";
     private GlTextureView mRenderView;
     private ViewRenderer mViewRenderer;
     GLProgressBar glProgressBar;
