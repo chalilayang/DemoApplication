@@ -9,10 +9,6 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.view.Surface;
 
-import com.particles.android.data.VertexArray;
-import com.particles.android.programs.ShaderProgram;
-import com.particles.android.util.TextureHelper;
-
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 

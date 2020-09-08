@@ -6,7 +6,7 @@
  * We make no guarantees that this code is fit for any purpose. 
  * Visit http://www.pragmaticprogrammer.com/titles/kbogla for more book information.
 ***/
-package com.particles.android.util;
+package com.render.demo;
 
 import static android.opengl.GLES20.GL_COMPILE_STATUS;
 import static android.opengl.GLES20.GL_FRAGMENT_SHADER;
@@ -27,6 +27,8 @@ import static android.opengl.GLES20.glLinkProgram;
 import static android.opengl.GLES20.glShaderSource;
 import static android.opengl.GLES20.glValidateProgram;
 import android.util.Log;
+
+import com.render.demo.LoggerConfig;
 
 public class ShaderHelper {
     private static final String TAG = "ShaderHelper";

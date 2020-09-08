@@ -18,7 +18,6 @@ import android.widget.EditText;
 import com.example.mi.view.GTChargeAniView;
 import com.example.mi.view.TextDrawView;
 import com.particles.android.GlRenderActivity;
-import com.particles.android.ParticlesActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

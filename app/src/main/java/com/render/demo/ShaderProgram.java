@@ -6,7 +6,7 @@
  * We make no guarantees that this code is fit for any purpose. 
  * Visit http://www.pragmaticprogrammer.com/titles/kbogla for more book information.
 ***/
-package com.particles.android.programs;
+package com.render.demo;
 
 import static android.opengl.GLES20.GL_TEXTURE0;
 import static android.opengl.GLES20.glActiveTexture;
@@ -20,8 +20,6 @@ import android.content.Context;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import com.example.mi.demoapplication.R;
-import com.particles.android.util.ShaderHelper;
-import com.particles.android.util.TextResourceReader;
 
 public class ShaderProgram {
     private static final String TAG = "ShaderProgram";

@@ -6,7 +6,7 @@
  * We make no guarantees that this code is fit for any purpose. 
  * Visit http://www.pragmaticprogrammer.com/titles/kbogla for more book information.
 ***/
-package com.particles.android.util;
+package com.render.demo;
 
 public class LoggerConfig {
     public static final boolean ON = true;
