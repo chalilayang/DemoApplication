@@ -12,7 +12,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="com.particles.android.GlRenderActivity"></activity>
+        <activity
+            android:name=".RenderScriptActivity"
+            android:label="@string/title_activity_render_script"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity android:name="com.particles.android.GlRenderActivity" />
 
         <service
             android:name="com.example.mi.MyIntentService"
@@ -33,6 +37,15 @@
         <activity android:name=".BezierActivity" />
         <activity android:name=".TextDrawActivity" />
         <activity android:name=".AodTestActivity" />
+        <activity
+            android:name=".ParticalActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_partical"
+            android:theme="@style/FullscreenTheme" />
+        <activity
+            android:name="com.particles.android.ParticlesActivity"
+            android:label="@string/app_name"></activity>
+
         <service
             android:name="com.example.mi.BroadcastTestService"
             android:enabled="true"

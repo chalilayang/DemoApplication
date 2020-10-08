@@ -8,6 +8,10 @@ android {
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
+
+        renderscriptTargetApi 18
+        renderscriptSupportModeEnabled false
+
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
@@ -35,6 +39,8 @@ dependencies {
     implementation 'com.google.android.material:material:1.0.0'
     // app对sdk的依赖（必须）
     implementation 'com.miui:static:alpha-SNAPSHOT'
+    implementation 'androidx.navigation:navigation-fragment:2.1.0'
+    implementation 'androidx.navigation:navigation-ui:2.1.0'
     compileOnly 'com.miui:rom:dev-SNAPSHOT'
     compileOnly 'com.miui:core:v11-dev-SNAPSHOT'
     compileOnly 'com.miui:system:dev-SNAPSHOT'

@@ -33,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
     Button button2;
     @BindView(R.id.button3)
     Button button3;
+    @BindView(R.id.button4)
+    Button button4;
     @BindView(R.id.gt_charge_view)
     GTChargeAniView gtChargeAniView;
     @BindView(R.id.text_draw_view)
@@ -45,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         button3.setBackground(getRoundCornerDrawable());
     }
 
-    @OnClick({R.id.button, R.id.button2, R.id.button3})
+    @OnClick({R.id.button, R.id.button2, R.id.button3, R.id.button4})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.button:
@@ -53,6 +55,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.button3:
                 startActivity(new Intent(this, GlRenderActivity.class));
+                break;
+            case R.id.button4:
+                startActivity(new Intent(this, RenderScriptActivity.class));
                 break;
         }
     }
