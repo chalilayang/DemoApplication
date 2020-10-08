@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.renderscript.Allocation;
 import android.renderscript.RenderScript;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -19,6 +20,7 @@ import butterknife.ButterKnife;
 
 public class RenderScriptActivity extends AppCompatActivity {
 
+    private static final String TAG = "RenderScriptActivity";
     @BindView(R.id.image1)
     ImageView image1;
     private RenderScript mRenderScript;
@@ -48,17 +50,31 @@ public class RenderScriptActivity extends AppCompatActivity {
         mScriptCFlip = new ScriptC_flip(mRenderScript);
     }
 
+    private Allocation mInAllocation;
+    private Allocation mOutAllocation;
+
     public Bitmap flipBitmap(Bitmap bitmap) {
         Bitmap outBitmap = Bitmap.createBitmap(bitmap);
-        Allocation inAllocation = Allocation.createFromBitmap(mRenderScript, bitmap);
-        Allocation outAllocation = Allocation.createFromBitmap(mRenderScript, outBitmap);
+        if (mInAllocation == null) {
+            mInAllocation = Allocation.createFromBitmap(mRenderScript, bitmap);
+        } else {
+            mInAllocation.copyFrom(bitmap);
+        }
+        if (mOutAllocation == null) {
+            mOutAllocation = Allocation.createFromBitmap(mRenderScript, outBitmap);
+        } else {
+            mOutAllocation.copyFrom(bitmap);
+        }
 
-        mScriptCFlip.invoke_flip_setup(inAllocation, outAllocation, 0);
-        mScriptCFlip.forEach_flip(inAllocation, outAllocation);
-        outAllocation.copyTo(outBitmap);
+        mScriptCFlip.set_gIn(mInAllocation);
+        mScriptCFlip.set_gOut(mOutAllocation);
+        mScriptCFlip.set_imageHeight(bitmap.getHeight());
+        mScriptCFlip.set_imageWidth(bitmap.getWidth());
+//        mScriptCFlip.invoke_flip_setup(mInAllocation, mOutAllocation);
+        mScriptCFlip.forEach_flip(mInAllocation, mOutAllocation);
+        mOutAllocation.copyTo(outBitmap);
 
-        inAllocation.destroy();
-        outAllocation.destroy();
+        Log.i(TAG, "flipBitmap: " + bitmap.getAllocationByteCount());
         return outBitmap;
     }
 }
