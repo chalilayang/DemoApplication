@@ -40,8 +40,7 @@ public class RenderScriptActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
-                Bitmap srcBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.music);
-                Bitmap flipBitmap = flipBitmap(srcBitmap);
+                Bitmap flipBitmap = flipBitmap();
                 image1.setImageBitmap(flipBitmap);
             }
         });
@@ -52,29 +51,29 @@ public class RenderScriptActivity extends AppCompatActivity {
 
     private Allocation mInAllocation;
     private Allocation mOutAllocation;
+    private Allocation mExtraAllocation;
 
-    public Bitmap flipBitmap(Bitmap bitmap) {
-        Bitmap outBitmap = Bitmap.createBitmap(bitmap);
+    public Bitmap flipBitmap() {
         if (mInAllocation == null) {
-            mInAllocation = Allocation.createFromBitmap(mRenderScript, bitmap);
-        } else {
-            mInAllocation.copyFrom(bitmap);
-        }
-        if (mOutAllocation == null) {
-            mOutAllocation = Allocation.createFromBitmap(mRenderScript, outBitmap);
-        } else {
-            mOutAllocation.copyFrom(bitmap);
+            mInAllocation = Allocation.createFromBitmapResource(mRenderScript, getResources(), R.drawable.music);
         }
 
-        mScriptCFlip.set_gIn(mInAllocation);
-        mScriptCFlip.set_gOut(mOutAllocation);
-        mScriptCFlip.set_imageHeight(bitmap.getHeight());
-        mScriptCFlip.set_imageWidth(bitmap.getWidth());
-//        mScriptCFlip.invoke_flip_setup(mInAllocation, mOutAllocation);
+        int width = mInAllocation.getType().getX();
+        int height = mInAllocation.getType().getY();
+        Bitmap outBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        if (mOutAllocation == null) {
+            mOutAllocation = Allocation.createTyped(
+                    mRenderScript, mInAllocation.getType(),Allocation.USAGE_SCRIPT);
+        }
+        if (mExtraAllocation == null) {
+            mExtraAllocation = Allocation.createFromBitmapResource(mRenderScript, getResources(), R.drawable.wechat2);
+        }
+
+        mScriptCFlip.set_gIn(mExtraAllocation);
+        mScriptCFlip.set_imageHeight(height);
+        mScriptCFlip.set_imageWidth(width);
         mScriptCFlip.forEach_flip(mInAllocation, mOutAllocation);
         mOutAllocation.copyTo(outBitmap);
-
-        Log.i(TAG, "flipBitmap: " + bitmap.getAllocationByteCount());
         return outBitmap;
     }
 }

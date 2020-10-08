@@ -11,7 +11,7 @@ uchar4 RS_KERNEL flip(const uchar4 in, uint32_t x, uint32_t y) {
     if (y < imageHeight / 3) {
         fliped = rsGetElementAt_uchar4(gIn, x, imageHeight - y);
     } else {
-        fliped = rsGetElementAt_uchar4(gIn, x, y);
+        fliped = in;
     }
     return fliped;
 }
