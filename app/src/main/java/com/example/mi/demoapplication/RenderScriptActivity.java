@@ -13,7 +13,6 @@ import android.widget.ImageView;
 
 import com.example.mi.ScriptC_flip;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 
 import java.io.InputStream;
 
@@ -43,10 +42,12 @@ public class RenderScriptActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-                Bitmap flipBitmap = processBitmap2();
-                image1.setImageBitmap(flipBitmap);
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//                Bitmap flipBitmap = processBitmap3();
+//                image1.setImageBitmap(flipBitmap);
+                compareBitmap(mBitmaps[0], mBitmaps[1]);
+//                new ComputeTask(getApplicationContext()).execute();
             }
         });
 
@@ -115,6 +116,27 @@ public class RenderScriptActivity extends AppCompatActivity {
         return outBitmap;
     }
 
+    public Bitmap processBitmap3() {
+        long start = System.currentTimeMillis();
+        if (mInAllocation == null) {
+            mInAllocation = Allocation.createFromBitmap(mRenderScript, mBitmaps[0]);
+        }
+        if (mExtraAllocation == null) {
+            mExtraAllocation = Allocation.createFromBitmap(mRenderScript, mBitmaps[1]);
+        }
+        Allocation outputAllocation = Allocation.createTyped(
+                mRenderScript, mInAllocation.getType(), Allocation.USAGE_SCRIPT);
+        int width = mInAllocation.getType().getX();
+        int height = mInAllocation.getType().getY();
+        mScriptCFlip.set_offset(400);
+        mScriptCFlip.invoke_process3(mInAllocation, mExtraAllocation, outputAllocation);
+        Bitmap outBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        outputAllocation.copyTo(outBitmap);
+        Log.i(TAG, "processBitmap3: " + mScriptCFlip.get_offset());
+        Log.i(TAG, "processBitmap3: cost " + (System.currentTimeMillis() - start));
+        return outBitmap;
+    }
+
     public Bitmap[] decodeRegion() {
         Bitmap[] result = new Bitmap[2];
         BitmapFactory.Options options = new BitmapFactory.Options();
@@ -129,12 +151,50 @@ public class RenderScriptActivity extends AppCompatActivity {
             BitmapFactory.Options regionOptions = new BitmapFactory.Options();
             regionOptions.inPreferredConfig = Bitmap.Config.RGB_565;
             Bitmap result1 = decoder.decodeRegion(rect, regionOptions);
-            rect.offset(0, 100);
+            rect.offset(0, 200);
             Bitmap result2 = decoder.decodeRegion(rect, regionOptions);
             result[0] = result1;
             result[1] = result2;
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        return result;
+    }
+
+    private void compareBitmap(Bitmap bitmap1, Bitmap bitmap2) {
+        long start = System.currentTimeMillis();
+        int height = bitmap1.getHeight();
+        int startOffset = -1;
+        for (int line2 = height - 1; line2 >= 0; line2 --) {
+            int line1Top = height - line2 - 1;
+            if (compareBitmapLine(bitmap1, height - 1, bitmap2, line2)
+                    && compareBitmapLine(bitmap1, line1Top, bitmap2, 0)) {
+                startOffset = line2;
+                break;
+            }
+        }
+        int result = height - startOffset - 1;
+        Log.i(TAG, "compareBitmap: cost " + (System.currentTimeMillis() - start) + " " + result);
+    }
+
+    int[] pixel1;
+    int[] pixel2;
+    private boolean compareBitmapLine(Bitmap bitmap1, int line1, Bitmap bitmap2, int line2) {
+        boolean result = true;
+        int width = bitmap1.getWidth();
+        if (pixel1 == null) {
+            pixel1 = new int[width];
+        }
+        if (pixel2 == null) {
+            pixel2 = new int[width];
+        }
+        bitmap1.getPixels(pixel1, 0, width, 0, line1, width, 1);
+        bitmap2.getPixels(pixel2, 0, width, 0, line2, width, 1);
+        for (int index = 0; index < width; index ++) {
+            if ((pixel1[index]^pixel2[index]) != 0) {
+                result = false;
+                break;
+            }
         }
         return result;
     }

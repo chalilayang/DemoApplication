@@ -5,6 +5,8 @@ rs_allocation gIn;
 rs_allocation gOut;
 uint32_t imageWidth;
 uint32_t imageHeight;
+uint32_t offset;
+uint32_t same;
 
 uchar4 RS_KERNEL flip(const uchar4 in, uint32_t x, uint32_t y) {
     uchar4 fliped = in;
@@ -22,6 +24,22 @@ uchar4 RS_KERNEL addPixel(const uchar4 in, uint32_t x, uint32_t y) {
     result.r = in.r + (fliped.r - in.r) / 2;
     result.g = in.g + (fliped.g - in.g) / 2;
     result.b = in.b + (fliped.b - in.b) / 2;
+    return result;
+}
+
+uchar4 RS_KERNEL xor(const uchar4 in, uint32_t x, uint32_t y) {
+    if (y < offset) {
+        return in;
+    }
+    uchar4 fliped = rsGetElementAt_uchar4(gIn, x, y - offset);
+    uchar4 result = fliped;
+    if (result.r-in.r == 0) {
+        result.r = 80;
+        result.g = 0;
+        result.b = 0;
+    } else {
+
+    }
     return result;
 }
 
@@ -62,4 +80,12 @@ void process2(rs_allocation inputImage, rs_allocation inputExtraImage, rs_alloca
     imageHeight = rsAllocationGetDimY(inputImage);
     gIn = inputExtraImage;
     rsForEach(addPixel, inputImage, outputImage);
+}
+
+void process3(rs_allocation inputImage, rs_allocation inputExtraImage, rs_allocation outputImage) {
+    imageWidth = rsAllocationGetDimX(inputImage);
+    imageHeight = rsAllocationGetDimY(inputImage);
+    gIn = inputExtraImage;
+    same = 1;
+    rsForEach(xor, inputImage, outputImage);
 }
