@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.example.mi.BitmapCompare;
 import com.example.mi.ScriptC_flip;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -26,6 +27,10 @@ public class RenderScriptActivity extends AppCompatActivity {
     private static final String TAG = "RenderScriptActivity";
     @BindView(R.id.image1)
     ImageView image1;
+    @BindView(R.id.image2)
+    ImageView image2;
+    @BindView(R.id.image3)
+    ImageView image3;
     private RenderScript mRenderScript;
     private ScriptC_flip mScriptCFlip;
     private Bitmap[] mBitmaps;
@@ -38,6 +43,8 @@ public class RenderScriptActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         mBitmaps = decodeRegion();
+        image1.setImageBitmap(mBitmaps[0]);
+        image3.setImageBitmap(mBitmaps[1]);
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -46,8 +53,14 @@ public class RenderScriptActivity extends AppCompatActivity {
 //                        .setAction("Action", null).show();
 //                Bitmap flipBitmap = processBitmap3();
 //                image1.setImageBitmap(flipBitmap);
-                compareBitmap(mBitmaps[0], mBitmaps[1]);
+//                compareBitmap(mBitmaps[0], mBitmaps[1]);
 //                new ComputeTask(getApplicationContext()).execute();
+                BitmapCompare bitmapCompare = new BitmapCompare();
+                bitmapCompare.cropBitmap(mBitmaps[0]);
+                long start = System.currentTimeMillis();
+                Bitmap bitmap = bitmapCompare.cropBitmap(mBitmaps[1]);
+                image2.setImageBitmap(bitmap);
+                Log.i(TAG, "onClick: " + (System.currentTimeMillis() - start));
             }
         });
 
@@ -147,11 +160,11 @@ public class RenderScriptActivity extends AppCompatActivity {
         try {
             InputStream inputStream = getResources().openRawResource(R.drawable.screenshot);
             BitmapRegionDecoder decoder = BitmapRegionDecoder.newInstance(inputStream,false);
-            Rect rect = new Rect(0, 0, width, height / 4);
+            Rect rect = new Rect(0, 0, width, height / 3);
             BitmapFactory.Options regionOptions = new BitmapFactory.Options();
             regionOptions.inPreferredConfig = Bitmap.Config.RGB_565;
             Bitmap result1 = decoder.decodeRegion(rect, regionOptions);
-            rect.offset(0, 200);
+            rect.offset(0, 800);
             Bitmap result2 = decoder.decodeRegion(rect, regionOptions);
             result[0] = result1;
             result[1] = result2;

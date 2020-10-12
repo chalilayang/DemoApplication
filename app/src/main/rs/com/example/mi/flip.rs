@@ -28,11 +28,8 @@ uchar4 RS_KERNEL addPixel(const uchar4 in, uint32_t x, uint32_t y) {
 }
 
 uchar4 RS_KERNEL xor(const uchar4 in, uint32_t x, uint32_t y) {
-    if (y < offset) {
-        return in;
-    }
-    uchar4 fliped = rsGetElementAt_uchar4(gIn, x, y - offset);
-    uchar4 result = fliped;
+    uchar4 pixelExtra = rsGetElementAt_uchar4(gIn, x, y);
+    uchar4 result = pixelExtra;
     if (result.r-in.r == 0) {
         result.r = 80;
         result.g = 0;
