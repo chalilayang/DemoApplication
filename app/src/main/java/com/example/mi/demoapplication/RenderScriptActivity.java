@@ -6,18 +6,15 @@ import android.graphics.BitmapRegionDecoder;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.renderscript.Allocation;
-import android.renderscript.Element;
 import android.renderscript.RenderScript;
-import android.renderscript.Type;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-
-import com.example.mi.BitmapCompare;
 import com.example.mi.ScriptC_flip;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -51,6 +48,11 @@ public class RenderScriptActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                int w = mBitmaps[0].getWidth();
+                int h = mBitmaps[0].getHeight();
+                int[] pixel = new int[w * h];
+                mBitmaps[0].getPixels(pixel, 0, w, 0, 0, w, h);
+                Bitmap bitmap2 = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
                 long start = System.currentTimeMillis();
 //                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
@@ -63,7 +65,10 @@ public class RenderScriptActivity extends AppCompatActivity {
 
 //                Bitmap bitmap = bitmapCompare.cropBitmap(mBitmaps[1]);
 //                image2.setImageBitmap(bitmap);
-                boolean same = compareBitmap();
+//                boolean same = compareBitmap();
+
+                boolean same = compareBitmapNative(mBitmaps[0], mBitmaps[1]);
+//                boolean same = mBitmaps[0].sameAs(mBitmaps[1]);
                 Log.i(TAG, "onClick: " + (System.currentTimeMillis() - start) + " " + same);
             }
         });
@@ -171,7 +176,10 @@ public class RenderScriptActivity extends AppCompatActivity {
 //        resultAlloc.copyTo(result);
 //        Log.i(TAG, "processBitmap3: cost " + (System.currentTimeMillis() - start) + "  " + result[0]);
 //        return result[0] == 0;
-        return mBitmaps[0].sameAs(mBitmaps[1]);
+        Bitmap bitmap1 = Bitmap.createBitmap(1080, 2010, Bitmap.Config.ARGB_8888);
+        Bitmap bitmap2 = Bitmap.createBitmap(1080, 2010, Bitmap.Config.ARGB_8888);
+//        return bitmap1.sameAs(bitmap2);
+        return compareBitmap2(bitmap1, bitmap2);
     }
 
     public Bitmap[] decodeRegion() {
@@ -186,7 +194,6 @@ public class RenderScriptActivity extends AppCompatActivity {
             BitmapRegionDecoder decoder = BitmapRegionDecoder.newInstance(inputStream,false);
             Rect rect = new Rect(0, 0, width, height / 3);
             BitmapFactory.Options regionOptions = new BitmapFactory.Options();
-            regionOptions.inPreferredConfig = Bitmap.Config.RGB_565;
             Bitmap result1 = decoder.decodeRegion(rect, regionOptions);
             rect.offset(0, 0);
             Bitmap result2 = decoder.decodeRegion(rect, regionOptions);
@@ -214,6 +221,16 @@ public class RenderScriptActivity extends AppCompatActivity {
         Log.i(TAG, "compareBitmap: cost " + (System.currentTimeMillis() - start) + " " + result);
     }
 
+    private boolean compareBitmap2(Bitmap bitmap1, Bitmap bitmap2) {
+        int height = bitmap1.getHeight();
+        for (int line2 = height - 1; line2 >= 0; line2 --) {
+            if (!compareBitmapLine(bitmap1, height - 1, bitmap2, line2)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     int[] pixel1;
     int[] pixel2;
     private boolean compareBitmapLine(Bitmap bitmap1, int line1, Bitmap bitmap2, int line2) {
@@ -233,6 +250,39 @@ public class RenderScriptActivity extends AppCompatActivity {
                 break;
             }
         }
+        return result;
+    }
+
+    static {
+        System.loadLibrary("native-lib");
+    }
+    public native int[] imgToGray(int[] pixels, int width, int height);
+    public native int compareByte(byte[] pixels1, byte[] pixels2, int width, int height);
+
+    public boolean compareBitmapNative(Bitmap bitmap1, Bitmap bitmap2) {
+        if (bitmap1 == null || bitmap2 == null) {
+            return false;
+        }
+        int height1 = bitmap1.getHeight();
+        int height2 = bitmap2.getHeight();
+        if (height1 != height2) {
+            return false;
+        }
+        int rowBytes1 = bitmap1.getRowBytes();
+        int rowBytes2 = bitmap2.getRowBytes();
+        if (rowBytes1 != rowBytes2) {
+            return false;
+        }
+        int bytesCount = rowBytes1 * height1;
+        ByteBuffer buf = ByteBuffer.allocate(bytesCount);
+        bitmap1.copyPixelsToBuffer(buf);
+        byte[] byteArray1 = buf.array();
+        buf = ByteBuffer.allocate(bytesCount);
+        bitmap2.copyPixelsToBuffer(buf);
+        byte[] byteArray2 = buf.array();
+        long start = System.currentTimeMillis();
+        boolean result = compareByte(byteArray1, byteArray2, rowBytes1, height1) == 1;
+        Log.i(TAG, "compareBitmap: cost " + (System.currentTimeMillis() - start) + " " + result);
         return result;
     }
 }
