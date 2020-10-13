@@ -6,7 +6,9 @@ import android.graphics.BitmapRegionDecoder;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.renderscript.Allocation;
+import android.renderscript.Element;
 import android.renderscript.RenderScript;
+import android.renderscript.Type;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -49,18 +51,20 @@ public class RenderScriptActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                long start = System.currentTimeMillis();
 //                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
 //                Bitmap flipBitmap = processBitmap3();
 //                image1.setImageBitmap(flipBitmap);
-//                compareBitmap(mBitmaps[0], mBitmaps[1]);
+//                compareBitmap(mBitmaps[0], mBitmaps[0]);
 //                new ComputeTask(getApplicationContext()).execute();
-                BitmapCompare bitmapCompare = new BitmapCompare();
-                bitmapCompare.cropBitmap(mBitmaps[0]);
-                long start = System.currentTimeMillis();
-                Bitmap bitmap = bitmapCompare.cropBitmap(mBitmaps[1]);
-                image2.setImageBitmap(bitmap);
-                Log.i(TAG, "onClick: " + (System.currentTimeMillis() - start));
+//                BitmapCompare bitmapCompare = new BitmapCompare();
+//                bitmapCompare.cropBitmap(mBitmaps[0]);
+
+//                Bitmap bitmap = bitmapCompare.cropBitmap(mBitmaps[1]);
+//                image2.setImageBitmap(bitmap);
+                boolean same = compareBitmap();
+                Log.i(TAG, "onClick: " + (System.currentTimeMillis() - start) + " " + same);
             }
         });
 
@@ -141,13 +145,33 @@ public class RenderScriptActivity extends AppCompatActivity {
                 mRenderScript, mInAllocation.getType(), Allocation.USAGE_SCRIPT);
         int width = mInAllocation.getType().getX();
         int height = mInAllocation.getType().getY();
-        mScriptCFlip.set_offset(400);
         mScriptCFlip.invoke_process3(mInAllocation, mExtraAllocation, outputAllocation);
         Bitmap outBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         outputAllocation.copyTo(outBitmap);
-        Log.i(TAG, "processBitmap3: " + mScriptCFlip.get_offset());
         Log.i(TAG, "processBitmap3: cost " + (System.currentTimeMillis() - start));
         return outBitmap;
+    }
+
+    public boolean compareBitmap() {
+//        long start = System.currentTimeMillis();
+//        if (mInAllocation == null) {
+//            mInAllocation = Allocation.createFromBitmap(mRenderScript, mBitmaps[0]);
+//        }
+//        if (mExtraAllocation == null) {
+//            mExtraAllocation = Allocation.createFromBitmap(mRenderScript, mBitmaps[1]);
+//        }
+//        Type.Builder typeBuilder = new Type.Builder(mRenderScript, Element.I32(mRenderScript));
+//        typeBuilder.setX(1);
+//        typeBuilder.setY(1);
+//        Allocation resultAlloc = Allocation.createTyped(
+//                mRenderScript, typeBuilder.create(), Allocation.USAGE_SCRIPT);
+//        mScriptCFlip.set_resultAlloc(resultAlloc);
+//        mScriptCFlip.invoke_process4(mInAllocation, mExtraAllocation);
+//        int[] result = new int[1];
+//        resultAlloc.copyTo(result);
+//        Log.i(TAG, "processBitmap3: cost " + (System.currentTimeMillis() - start) + "  " + result[0]);
+//        return result[0] == 0;
+        return mBitmaps[0].sameAs(mBitmaps[1]);
     }
 
     public Bitmap[] decodeRegion() {
@@ -164,7 +188,7 @@ public class RenderScriptActivity extends AppCompatActivity {
             BitmapFactory.Options regionOptions = new BitmapFactory.Options();
             regionOptions.inPreferredConfig = Bitmap.Config.RGB_565;
             Bitmap result1 = decoder.decodeRegion(rect, regionOptions);
-            rect.offset(0, 800);
+            rect.offset(0, 0);
             Bitmap result2 = decoder.decodeRegion(rect, regionOptions);
             result[0] = result1;
             result[1] = result2;
