@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.example.mi.screenshot.ScreenShotTestCaseActivity;
 import com.example.mi.view.GTChargeAniView;
 import com.example.mi.view.TextDrawView;
 import com.particles.android.GlRenderActivity;
@@ -52,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
         switch (view.getId()) {
             case R.id.button:
             case R.id.button2:
+                startActivity(new Intent(this, ScreenShotTestCaseActivity.class));
                 break;
             case R.id.button3:
                 startActivity(new Intent(this, GlRenderActivity.class));

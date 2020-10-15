@@ -3,6 +3,8 @@ package com.example.mi.demoapplication;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.renderscript.Allocation;
@@ -53,6 +55,8 @@ public class RenderScriptActivity extends AppCompatActivity {
                 int[] pixel = new int[w * h];
                 mBitmaps[0].getPixels(pixel, 0, w, 0, 0, w, h);
                 Bitmap bitmap2 = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+                byteBuffer1 = ByteBuffer.allocateDirect(mBitmaps[0].getByteCount());
+                byteBuffer2 = ByteBuffer.allocateDirect(mBitmaps[1].getByteCount());
                 long start = System.currentTimeMillis();
 //                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
@@ -67,9 +71,11 @@ public class RenderScriptActivity extends AppCompatActivity {
 //                image2.setImageBitmap(bitmap);
 //                boolean same = compareBitmap();
 
+
                 boolean same = compareBitmapNative(mBitmaps[0], mBitmaps[1]);
 //                boolean same = mBitmaps[0].sameAs(mBitmaps[1]);
                 Log.i(TAG, "onClick: " + (System.currentTimeMillis() - start) + " " + same);
+                transViewToBitmap(getWindow().getDecorView());
             }
         });
 
@@ -259,6 +265,8 @@ public class RenderScriptActivity extends AppCompatActivity {
     public native int[] imgToGray(int[] pixels, int width, int height);
     public native int compareByte(byte[] pixels1, byte[] pixels2, int width, int height);
 
+    private ByteBuffer byteBuffer1;
+    private ByteBuffer byteBuffer2;
     public boolean compareBitmapNative(Bitmap bitmap1, Bitmap bitmap2) {
         if (bitmap1 == null || bitmap2 == null) {
             return false;
@@ -274,15 +282,28 @@ public class RenderScriptActivity extends AppCompatActivity {
             return false;
         }
         int bytesCount = rowBytes1 * height1;
-        ByteBuffer buf = ByteBuffer.allocate(bytesCount);
-        bitmap1.copyPixelsToBuffer(buf);
-        byte[] byteArray1 = buf.array();
-        buf = ByteBuffer.allocate(bytesCount);
-        bitmap2.copyPixelsToBuffer(buf);
-        byte[] byteArray2 = buf.array();
+//        ByteBuffer byteBuffer1 = ByteBuffer.allocateDirect(bytesCount);
+        bitmap1.copyPixelsToBuffer(byteBuffer1);
+        byte[] byteArray1 = byteBuffer1.array();
+//        byteBuffer1 = ByteBuffer.allocateDirect(bytesCount);
+        bitmap2.copyPixelsToBuffer(byteBuffer2);
+        byte[] byteArray2 = byteBuffer2.array();
         long start = System.currentTimeMillis();
         boolean result = compareByte(byteArray1, byteArray2, rowBytes1, height1) == 1;
         Log.i(TAG, "compareBitmap: cost " + (System.currentTimeMillis() - start) + " " + result);
         return result;
+    }
+
+    public static Bitmap transViewToBitmap(View view) {
+        long start = System.currentTimeMillis();
+        int w = view.getMeasuredWidth();
+        int h = view.getMeasuredHeight();
+        Bitmap bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bmp);
+        canvas.drawColor(Color.TRANSPARENT);
+        view.layout(0, 0, w, h);
+        view.draw(canvas);
+        Log.i(TAG, "transViewToBitmap: " + (System.currentTimeMillis() - start));
+        return bmp;
     }
 }
