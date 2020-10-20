@@ -72,7 +72,7 @@ public class RenderScriptActivity extends AppCompatActivity {
 //                boolean same = compareBitmap();
 
 
-                boolean same = compareBitmapNative(mBitmaps[0], mBitmaps[1]);
+                boolean same = nativeCompareBitmap(mBitmaps[0], mBitmaps[1]) == 1;
 //                boolean same = mBitmaps[0].sameAs(mBitmaps[1]);
                 Log.i(TAG, "onClick: " + (System.currentTimeMillis() - start) + " " + same);
                 transViewToBitmap(getWindow().getDecorView());
@@ -201,7 +201,7 @@ public class RenderScriptActivity extends AppCompatActivity {
             Rect rect = new Rect(0, 0, width, height / 3);
             BitmapFactory.Options regionOptions = new BitmapFactory.Options();
             Bitmap result1 = decoder.decodeRegion(rect, regionOptions);
-            rect.offset(0, 0);
+            rect.offset(0, 1);
             Bitmap result2 = decoder.decodeRegion(rect, regionOptions);
             result[0] = result1;
             result[1] = result2;
@@ -264,6 +264,7 @@ public class RenderScriptActivity extends AppCompatActivity {
     }
     public native int[] imgToGray(int[] pixels, int width, int height);
     public native int compareByte(byte[] pixels1, byte[] pixels2, int width, int height);
+    public native int nativeCompareBitmap(Bitmap bitmap, Bitmap bitmap2);
 
     private ByteBuffer byteBuffer1;
     private ByteBuffer byteBuffer2;

@@ -1,5 +1,6 @@
 #include <jni.h>
 #include <string>
+#include <android/bitmap.h>
 
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_example_mi_demoapplication_MainActivity_stringFromJNI(
@@ -51,5 +52,45 @@ JNIEXPORT jint JNICALL Java_com_example_mi_demoapplication_RenderScriptActivity_
     }
     env->ReleaseByteArrayElements(buf1, cbuf,0);
     env->ReleaseByteArrayElements(buf2, cbuf2,0);
+    return same;
+}
+
+extern "C"
+JNIEXPORT jint JNICALL Java_com_example_mi_demoapplication_RenderScriptActivity_nativeCompareBitmap
+        (JNIEnv *env, jobject, jobject bitmap, jobject bitmap2) {
+    AndroidBitmapInfo bitmapInfo;
+    if ((AndroidBitmap_getInfo(env, bitmap, &bitmapInfo)) < 0) {
+        return 0;
+    }
+    void *bitmapPixels;
+    if ((AndroidBitmap_lockPixels(env, bitmap, &bitmapPixels)) < 0) {
+        return 0;
+    }
+    AndroidBitmapInfo bitmapInfo2;
+    if ((AndroidBitmap_getInfo(env, bitmap2, &bitmapInfo2)) < 0) {
+        return 0;
+    }
+    void *bitmapPixels2;
+    if ((AndroidBitmap_lockPixels(env, bitmap2, &bitmapPixels2)) < 0) {
+        return 0;
+    }
+    uint32_t newWidth = bitmapInfo.height;
+    uint32_t newHeight = bitmapInfo.width;
+    uint32_t newWidth2 = bitmapInfo2.height;
+    uint32_t newHeight2 = bitmapInfo2.width;
+    uint32_t stride = bitmapInfo.stride;
+    uint32_t stride2 = bitmapInfo2.stride;
+    if (newHeight != newHeight2 || newWidth != newWidth2) {
+        return 0;
+    }
+    jint same = 1;
+    for (int i = 0; i < newHeight; i = i + 1) {
+        jbyte* line1 = (jbyte*) bitmapPixels + i * stride;
+        jbyte* line2 = (jbyte*) bitmapPixels2 + i * stride2;
+        if (memcmp(line1, line2, newWidth) != 0) {
+            same = 0;
+            break;
+        }
+    }
     return same;
 }
