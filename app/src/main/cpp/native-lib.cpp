@@ -68,10 +68,12 @@ JNIEXPORT jint JNICALL Java_com_example_mi_demoapplication_RenderScriptActivity_
     }
     AndroidBitmapInfo bitmapInfo2;
     if ((AndroidBitmap_getInfo(env, bitmap2, &bitmapInfo2)) < 0) {
+        AndroidBitmap_unlockPixels(env, bitmap);
         return 0;
     }
     void *bitmapPixels2;
     if ((AndroidBitmap_lockPixels(env, bitmap2, &bitmapPixels2)) < 0) {
+        AndroidBitmap_unlockPixels(env, bitmap);
         return 0;
     }
     uint32_t newWidth = bitmapInfo.height;
@@ -81,6 +83,8 @@ JNIEXPORT jint JNICALL Java_com_example_mi_demoapplication_RenderScriptActivity_
     uint32_t stride = bitmapInfo.stride;
     uint32_t stride2 = bitmapInfo2.stride;
     if (newHeight != newHeight2 || newWidth != newWidth2) {
+        AndroidBitmap_unlockPixels(env, bitmap);
+        AndroidBitmap_unlockPixels(env, bitmap2);
         return 0;
     }
     jint same = 1;
@@ -92,5 +96,7 @@ JNIEXPORT jint JNICALL Java_com_example_mi_demoapplication_RenderScriptActivity_
             break;
         }
     }
+    AndroidBitmap_unlockPixels(env, bitmap);
+    AndroidBitmap_unlockPixels(env, bitmap2);
     return same;
 }
