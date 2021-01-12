@@ -5,18 +5,21 @@ import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.renderscript.Allocation;
-import android.renderscript.RenderScript;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
-import com.example.mi.ScriptC_flip;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -32,8 +35,8 @@ public class RenderScriptActivity extends AppCompatActivity {
     ImageView image2;
     @BindView(R.id.image3)
     ImageView image3;
-    private RenderScript mRenderScript;
-    private ScriptC_flip mScriptCFlip;
+    @BindView(R.id.image4)
+    ImageView image4;
     private Bitmap[] mBitmaps;
 
     @Override
@@ -43,149 +46,72 @@ public class RenderScriptActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        mBitmaps = decodeRegion();
+        mBitmaps = decodeBitmap();
         image1.setImageBitmap(mBitmaps[0]);
-        image3.setImageBitmap(mBitmaps[1]);
+        image2.setImageBitmap(mBitmaps[1]);
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int w = mBitmaps[0].getWidth();
-                int h = mBitmaps[0].getHeight();
-                int[] pixel = new int[w * h];
-                mBitmaps[0].getPixels(pixel, 0, w, 0, 0, w, h);
-                Bitmap bitmap2 = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-                byteBuffer1 = ByteBuffer.allocateDirect(mBitmaps[0].getByteCount());
-                byteBuffer2 = ByteBuffer.allocateDirect(mBitmaps[1].getByteCount());
-                long start = System.currentTimeMillis();
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//                Bitmap flipBitmap = processBitmap3();
-//                image1.setImageBitmap(flipBitmap);
-//                compareBitmap(mBitmaps[0], mBitmaps[0]);
-//                new ComputeTask(getApplicationContext()).execute();
-//                BitmapCompare bitmapCompare = new BitmapCompare();
-//                bitmapCompare.cropBitmap(mBitmaps[0]);
+                int value = compareBitmap(mBitmaps[0], mBitmaps[1]);
+                Log.i(TAG, "onClick: value " + value + " " + mBitmaps[0].getHeight());
+                Rect rect = new Rect();
+                rect.left = 0;
+                rect.top = value;
+                rect.right = mBitmaps[0].getWidth() - 1;
+                rect.bottom = mBitmaps[0].getHeight();
+                image1.setImageBitmap(drawRectOnBitmap(mBitmaps[0], rect));
+                Bitmap bitmapa = createBitmapRegion(mBitmaps[0], rect);
+                image3.setImageBitmap(bitmapa);
+                int[] p1 = createBitmapPixels(mBitmaps[0], rect);
+                rect.top = 0;
+                rect.bottom = mBitmaps[0].getHeight() - value;
+                image2.setImageBitmap(drawRectOnBitmap(mBitmaps[1], rect));
+                Bitmap bitmapb = createBitmapRegion(mBitmaps[1], rect);
+                image4.setImageBitmap(bitmapb);
+                int[] p2 = createBitmapPixels(mBitmaps[1], rect);
 
-//                Bitmap bitmap = bitmapCompare.cropBitmap(mBitmaps[1]);
-//                image2.setImageBitmap(bitmap);
-//                boolean same = compareBitmap();
-
-
-                boolean same = nativeCompareBitmap(mBitmaps[0], mBitmaps[1]) == 1;
-//                boolean same = mBitmaps[0].sameAs(mBitmaps[1]);
-                Log.i(TAG, "onClick: " + (System.currentTimeMillis() - start) + " " + same);
-                transViewToBitmap(getWindow().getDecorView());
+//                ViewGroup.MarginLayoutParams layoutParams
+//                        = (ViewGroup.MarginLayoutParams) image2.getLayoutParams();
+//                layoutParams.topMargin --;
+//                image2.setLayoutParams(layoutParams);
+//                Log.i(TAG, "onClick: " + layoutParams.topMargin + " " + image2.getHeight() + " " + mBitmaps[1].getHeight());
+//                image2.setAlpha(0.6f);
+//
+//                image3.setImageBitmap(dddBitmap(layoutParams.topMargin));
             }
         });
-
-        mRenderScript = RenderScript.create(getApplicationContext());
-        mScriptCFlip = new ScriptC_flip(mRenderScript);
+        fab = findViewById(R.id.fab2);
+        fab.setOnClickListener(view -> {
+//            ViewGroup.MarginLayoutParams layoutParams
+//                    = (ViewGroup.MarginLayoutParams) image2.getLayoutParams();
+//            layoutParams.topMargin ++;
+//            image2.setLayoutParams(layoutParams);
+//            Log.i(TAG, "onClick: " + layoutParams.topMargin + " " + image2.getHeight() + " " + mBitmaps[1].getHeight());
+//            image2.setAlpha(0.6f);
+//            image3.setImageBitmap(dddBitmap(layoutParams.topMargin));
+        });
     }
 
-    private Allocation mInAllocation;
-    private Allocation mOutAllocation;
-    private Allocation mExtraAllocation;
-
-    public Bitmap flipBitmap() {
-        if (mInAllocation == null) {
-            mInAllocation = Allocation.createFromBitmapResource(mRenderScript, getResources(), R.drawable.music);
+    public Bitmap dddBitmap(int bottom) {
+        bottom = Math.abs(bottom);
+        Rect rect = new Rect(
+                0,
+                mBitmaps[0].getHeight() - 1 - bottom,
+                mBitmaps[0].getWidth() - 1, mBitmaps[0].getHeight() - 1);
+        int[] p1 = createBitmapPixels(mBitmaps[0], rect);
+        rect.offset(0, -rect.top);
+        int[] p2 = createBitmapPixels(mBitmaps[1], rect);
+        long sum = 0;
+        for (int i = 0, count = p1.length; i < count; i ++) {
+            int d = p1[i] - p2[i];
+            p1[i] = d;
+            if (d != 0) {
+                sum ++;
+            }
         }
-
-        int width = mInAllocation.getType().getX();
-        int height = mInAllocation.getType().getY();
-        Bitmap outBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        if (mOutAllocation == null) {
-            mOutAllocation = Allocation.createTyped(
-                    mRenderScript, mInAllocation.getType(), Allocation.USAGE_SCRIPT);
-        }
-        if (mExtraAllocation == null) {
-            mExtraAllocation = Allocation.createFromBitmapResource(mRenderScript, getResources(), R.drawable.wechat2);
-        }
-
-        mScriptCFlip.set_gIn(mExtraAllocation);
-        mScriptCFlip.set_imageHeight(height);
-        mScriptCFlip.set_imageWidth(width);
-        mScriptCFlip.forEach_addPixel(mInAllocation, mOutAllocation);
-        mOutAllocation.copyTo(outBitmap);
-        return outBitmap;
-    }
-
-    public Bitmap processBitmap() {
-        if (mInAllocation == null) {
-            mInAllocation = Allocation.createFromBitmapResource(mRenderScript, getResources(), R.drawable.wechat2);
-        }
-        Allocation outputAllocation = Allocation.createTyped(
-                mRenderScript, mInAllocation.getType(), Allocation.USAGE_SCRIPT);
-        mScriptCFlip.invoke_process(mInAllocation, outputAllocation);
-        int width = outputAllocation.getType().getX();
-        int height = outputAllocation.getType().getY();
-        Bitmap outBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        outputAllocation.copyTo(outBitmap);
-        return outBitmap;
-    }
-
-    public Bitmap processBitmap2() {
-        long start = System.currentTimeMillis();
-        if (mInAllocation == null) {
-            mInAllocation = Allocation.createFromBitmap(mRenderScript, mBitmaps[0]);
-        }
-        if (mExtraAllocation == null) {
-            mExtraAllocation = Allocation.createFromBitmap(mRenderScript, mBitmaps[1]);
-        }
-        Allocation outputAllocation = Allocation.createTyped(
-                mRenderScript, mInAllocation.getType(), Allocation.USAGE_SCRIPT);
-        int width = mInAllocation.getType().getX();
-        int height = mInAllocation.getType().getY();
-        mScriptCFlip.invoke_process2(mInAllocation, mExtraAllocation, outputAllocation);
-        Bitmap outBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        outputAllocation.copyTo(outBitmap);
-        Log.i(TAG, "processBitmap2: cost " + (System.currentTimeMillis() - start));
-        return outBitmap;
-    }
-
-    public Bitmap processBitmap3() {
-        long start = System.currentTimeMillis();
-        if (mInAllocation == null) {
-            mInAllocation = Allocation.createFromBitmap(mRenderScript, mBitmaps[0]);
-        }
-        if (mExtraAllocation == null) {
-            mExtraAllocation = Allocation.createFromBitmap(mRenderScript, mBitmaps[1]);
-        }
-        Allocation outputAllocation = Allocation.createTyped(
-                mRenderScript, mInAllocation.getType(), Allocation.USAGE_SCRIPT);
-        int width = mInAllocation.getType().getX();
-        int height = mInAllocation.getType().getY();
-        mScriptCFlip.invoke_process3(mInAllocation, mExtraAllocation, outputAllocation);
-        Bitmap outBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        outputAllocation.copyTo(outBitmap);
-        Log.i(TAG, "processBitmap3: cost " + (System.currentTimeMillis() - start));
-        return outBitmap;
-    }
-
-    public boolean compareBitmap() {
-//        long start = System.currentTimeMillis();
-//        if (mInAllocation == null) {
-//            mInAllocation = Allocation.createFromBitmap(mRenderScript, mBitmaps[0]);
-//        }
-//        if (mExtraAllocation == null) {
-//            mExtraAllocation = Allocation.createFromBitmap(mRenderScript, mBitmaps[1]);
-//        }
-//        Type.Builder typeBuilder = new Type.Builder(mRenderScript, Element.I32(mRenderScript));
-//        typeBuilder.setX(1);
-//        typeBuilder.setY(1);
-//        Allocation resultAlloc = Allocation.createTyped(
-//                mRenderScript, typeBuilder.create(), Allocation.USAGE_SCRIPT);
-//        mScriptCFlip.set_resultAlloc(resultAlloc);
-//        mScriptCFlip.invoke_process4(mInAllocation, mExtraAllocation);
-//        int[] result = new int[1];
-//        resultAlloc.copyTo(result);
-//        Log.i(TAG, "processBitmap3: cost " + (System.currentTimeMillis() - start) + "  " + result[0]);
-//        return result[0] == 0;
-        Bitmap bitmap1 = Bitmap.createBitmap(1080, 2010, Bitmap.Config.ARGB_8888);
-        Bitmap bitmap2 = Bitmap.createBitmap(1080, 2010, Bitmap.Config.ARGB_8888);
-//        return bitmap1.sameAs(bitmap2);
-        return compareBitmap2(bitmap1, bitmap2);
+        Log.i(TAG, "dddBitmap: sum " + (sum * 1.0f / p1.length));
+        return Bitmap.createBitmap(p1, rect.width(), rect.height(), mBitmaps[0].getConfig());
     }
 
     public Bitmap[] decodeRegion() {
@@ -201,7 +127,7 @@ public class RenderScriptActivity extends AppCompatActivity {
             Rect rect = new Rect(0, 0, width, height / 3);
             BitmapFactory.Options regionOptions = new BitmapFactory.Options();
             Bitmap result1 = decoder.decodeRegion(rect, regionOptions);
-            rect.offset(0, 1);
+            rect.offset(0, 300);
             Bitmap result2 = decoder.decodeRegion(rect, regionOptions);
             result[0] = result1;
             result[1] = result2;
@@ -211,20 +137,113 @@ public class RenderScriptActivity extends AppCompatActivity {
         return result;
     }
 
-    private void compareBitmap(Bitmap bitmap1, Bitmap bitmap2) {
+    public Bitmap[] decodeBitmap() {
+        Bitmap[] result = new Bitmap[2];
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeResource(getResources(), R.drawable.r5, options);
+        int width = options.outWidth;
+        int height = options.outHeight;
+        try {
+            InputStream inputStream = getResources().openRawResource(R.drawable.r1);
+            BitmapRegionDecoder decoder = BitmapRegionDecoder.newInstance(inputStream,false);
+            Rect rect = new Rect(0, 0, width, height);
+            BitmapFactory.Options regionOptions = new BitmapFactory.Options();
+            Bitmap result1 = decoder.decodeRegion(rect, regionOptions);
+
+            rect.offset(0, 0);
+            inputStream = getResources().openRawResource(R.drawable.r2);
+            decoder = BitmapRegionDecoder.newInstance(inputStream,false);
+            Bitmap result2 = decoder.decodeRegion(rect, regionOptions);
+
+            result[0] = result1;
+            result[1] = result2;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public boolean compare(int[] d1, int[] d2) {
+        for (int index = 0, count = d1.length; index < count; index ++) {
+            if (d1[index] != d2[index]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public int[] createBitmapPixels(Bitmap bitmap, Rect region) {
+        int width = region.width();
+        int height = region.height();
+        int[] pix = new int[width * height];
+        bitmap.getPixels(pix, 0, width, region.left, region.top, width, height);
+        return pix;
+    }
+
+    public Bitmap createBitmapRegion(Bitmap bitmap, Rect region) {
+        int[] pix = createBitmapPixels(bitmap, region);
+        bitmap.getPixels(pix, 0, region.width(), region.left, region.top, region.width(), region.height());
+        return Bitmap.createBitmap(
+                pix, 0, region.width(), region.width(), region.height(), bitmap.getConfig());
+    }
+
+    public int compareBitmap(Bitmap bitmapPre, Bitmap bitmapBack) {
         long start = System.currentTimeMillis();
-        int height = bitmap1.getHeight();
+        int height = bitmapPre.getHeight();
         int startOffset = -1;
-        for (int line2 = height - 1; line2 >= 0; line2 --) {
-            int line1Top = height - line2 - 1;
-            if (compareBitmapLine(bitmap1, height - 1, bitmap2, line2)
-                    && compareBitmapLine(bitmap1, line1Top, bitmap2, 0)) {
-                startOffset = line2;
+        if (bitmapPre.sameAs(bitmapBack)) {
+            Log.i(TAG, "compareBitmap: sameAs");
+            return 0;
+        }
+        for (int lineBack = height - 1; lineBack >= 0; lineBack --) {
+            int linePre = height - lineBack - 1;
+            if (compareBitmapRange(
+                    bitmapPre, linePre, height - 1, bitmapBack, 0, lineBack)) {
+                Log.i(TAG, "compareBitmap: lineBack " + lineBack);
+                startOffset = lineBack;
                 break;
             }
         }
-        int result = height - startOffset - 1;
-        Log.i(TAG, "compareBitmap: cost " + (System.currentTimeMillis() - start) + " " + result);
+        Log.i(TAG, "compareBitmap: cost " + (System.currentTimeMillis() - start));
+        return height - startOffset - 1;
+    }
+
+//    public boolean compareBitmapRange(
+//            Bitmap bitmapPre, int lineTopPre, int lineBottomPre,
+//            Bitmap bitmapBack, int lineTopBack, int lineBottomBack) {
+//        if (lineBottomPre - lineTopPre != lineBottomBack - lineTopBack) {
+//            return false;
+//        }
+//        Log.i(TAG, "compareBitmapRange: linePre "
+//                + lineTopPre + "--" + lineBottomPre + "  lineBack " + lineTopBack + " --" + lineBottomBack);
+//        int count = lineBottomPre - lineTopPre;
+//        for(int index = 0; index <= count; index ++) {
+//            if (!compareBitmapLine(
+//                    bitmapPre, lineTopPre + index, bitmapBack, lineTopBack + index)) {
+//                Log.i(TAG, "compareBitmapRange: " + (lineTopPre + index) + " " + (lineTopBack + index) + "  false");
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
+
+    public boolean compareBitmapRange(
+            Bitmap bitmapPre, int lineTopPre, int lineBottomPre,
+            Bitmap bitmapBack, int lineTopBack, int lineBottomBack) {
+        if (lineBottomPre - lineTopPre != lineBottomBack - lineTopBack) {
+            return false;
+        }
+        Log.i(TAG, "compareBitmapRange: linePre "
+                + lineTopPre + "--" + lineBottomPre + "  lineBack " + lineTopBack + " --" + lineBottomBack);
+        int count = lineBottomPre - lineTopPre;
+        for(int index = 0; index <= count; index ++) {
+            if (!compareBitmapLine(bitmapPre, lineTopPre + index, bitmapBack, lineTopBack + index)) {
+                Log.i(TAG, "compareBitmapRange:"+ " "+ (lineTopPre + index) + " " + (lineTopBack + index) + "  false");
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean compareBitmap2(Bitmap bitmap1, Bitmap bitmap2) {
@@ -235,6 +254,45 @@ public class RenderScriptActivity extends AppCompatActivity {
             }
         }
         return true;
+    }
+
+    public String getPixelString(Bitmap bitmap) {
+        StringBuilder sb = new StringBuilder();
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        if (pixel1 == null) {
+            pixel1 = new int[width];
+        }
+        for (int index = 0; index < height; index ++) {
+//            bitmap.getPixels(pixel1, 0, width, 0, index, width, 1);
+//            for (int value : pixel1) {
+//                sb.append(Color.red(value)).append("  ");
+//            }
+            for (int x = 0; x < width; x ++) {
+                sb.append(bitmap.getPixel(x, index)).append("  ");
+            }
+            sb.append("\n");
+            Log.i(TAG, "getPixelString: " + sb.length());
+        }
+        return sb.toString();
+    }
+
+    private static void saveAsFileWriter(String content, String path) {
+        FileWriter fwriter = null;
+        try {
+            // true表示不覆盖原来的内容，而是加到文件的后面。若要覆盖原来的内容，直接省略这个参数就好
+            fwriter = new FileWriter(path);
+            fwriter.write(content);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } finally {
+            try {
+                fwriter.flush();
+                fwriter.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 
     int[] pixel1;
@@ -250,10 +308,14 @@ public class RenderScriptActivity extends AppCompatActivity {
         }
         bitmap1.getPixels(pixel1, 0, width, 0, line1, width, 1);
         bitmap2.getPixels(pixel2, 0, width, 0, line2, width, 1);
-        for (int index = 0; index < width; index ++) {
-            if ((pixel1[index]^pixel2[index]) != 0) {
-                result = false;
-                break;
+        int sum = 0;
+        for (int index = 0; index < width; index = index + 3) {
+            if ((pixel1[index] - pixel2[index]) != 0) {
+                sum ++;
+                if (sum > 80) {
+                    result = false;
+                    break;
+                }
             }
         }
         return result;
@@ -306,5 +368,18 @@ public class RenderScriptActivity extends AppCompatActivity {
         view.draw(canvas);
         Log.i(TAG, "transViewToBitmap: " + (System.currentTimeMillis() - start));
         return bmp;
+    }
+
+    public Bitmap drawRectOnBitmap(Bitmap bitmap, Rect rect) {
+        Log.i(TAG, "drawRectOnBitmap: " + rect.height());
+        rect.top = Math.max(0, rect.top);
+        rect.bottom = Math.min(bitmap.getHeight(), rect.bottom);
+        Bitmap result = bitmap.copy(bitmap.getConfig(), true);
+        Canvas canvas = new Canvas(result);
+        Paint paint = new Paint();
+        paint.setColor(Color.RED);
+        paint.setAlpha(100);
+        canvas.drawRect(rect, paint);
+        return result;
     }
 }

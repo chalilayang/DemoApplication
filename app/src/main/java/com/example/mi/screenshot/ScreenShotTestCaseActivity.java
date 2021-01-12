@@ -54,7 +54,7 @@ public class ScreenShotTestCaseActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return 13;
+            return 23;
         }
     }
 
