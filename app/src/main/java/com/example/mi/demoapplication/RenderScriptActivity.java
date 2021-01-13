@@ -53,7 +53,7 @@ public class RenderScriptActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                int value = BitmapUtils.nativeCompareBitmap(mBitmaps[0], mBitmaps[1], 0.1f);
+//                int value = BitmapUtils.nativeCompareBitmap(mBitmaps[0], mBitmaps[1], 0.01f);
 //                Log.i(TAG, "onClick: value " + value + " " + mBitmaps[0].getHeight());
 //                Rect rect = new Rect();
 //                rect.left = 0;
@@ -80,11 +80,11 @@ public class RenderScriptActivity extends AppCompatActivity {
 //
 //                image3.setImageBitmap(dddBitmap(layoutParams.topMargin));
 
-//                long start = SystemClock.elapsedRealtime();
-//                double sim = BitmapUtils.nativeGetSimilarity(
-//                        mBitmaps[0], 455, mBitmaps[1], 0, 2188 - 455, 0.01);
-//                Log.i(TAG, "onClick: sim " + new BigDecimal(sim+"")
-//                        + " cost " + (SystemClock.elapsedRealtime() - start));
+                long start = SystemClock.elapsedRealtime();
+                double sim = BitmapUtils.nativeGetSimilarity(
+                        mBitmaps[0], 454, mBitmaps[1], 0, 2188 - 454, 0.01);
+                Log.i(TAG, "onClick: sim " + new BigDecimal(sim+"")
+                        + " cost " + (SystemClock.elapsedRealtime() - start));
             }
         });
         fab = findViewById(R.id.fab2);
@@ -147,7 +147,7 @@ public class RenderScriptActivity extends AppCompatActivity {
         Bitmap[] result = new Bitmap[2];
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeResource(getResources(), R.drawable.r5, options);
+        BitmapFactory.decodeResource(getResources(), R.drawable.r1, options);
         int width = options.outWidth;
         int height = options.outHeight;
         try {
