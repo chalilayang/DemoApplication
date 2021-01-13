@@ -117,7 +117,7 @@ JNIEXPORT jint JNICALL Java_com_miui_screenshot_BitmapUtils_nativeCompareBitmapR
 
 extern "C"
 JNIEXPORT jint JNICALL Java_com_miui_screenshot_BitmapUtils_nativeCompareBitmap
-        (JNIEnv *env, jclass bitmapUtilClass, jobject bitmapPre, jobject bitmapBack) {
+        (JNIEnv *env, jclass bitmapUtilClass, jobject bitmapPre, jobject bitmapBack, jfloat threshold) {
     AndroidBitmapInfo bitmapInfo;
     if ((AndroidBitmap_getInfo(env, bitmapPre, &bitmapInfo)) < 0) {
         return 0;
@@ -142,13 +142,13 @@ JNIEXPORT jint JNICALL Java_com_miui_screenshot_BitmapUtils_nativeCompareBitmap
     jint newHeight2 = bitmapInfo2.height;
     jint stride = bitmapInfo.stride;
     jint stride2 = bitmapInfo2.stride;
-    LOGE("nativeCompareBitmapRange stride %d",stride2);
+    jint cc = newWidth * threshold;
+    LOGE("nativeCompareBitmapRange stride %d, threshold %d ", stride2, threshold);
     if (newHeight != newHeight2 || newWidth != newWidth2) {
         AndroidBitmap_unlockPixels(env, bitmapPre);
         AndroidBitmap_unlockPixels(env, bitmapBack);
         return 0;
     }
-    jint cc = 500;
     jint startOffset = -1;
     for (jint lineBack = newHeight - 1; lineBack >= 0; lineBack --) {
         jint lineBottomPre = newHeight - 1;
@@ -192,6 +192,84 @@ JNIEXPORT jint JNICALL Java_com_miui_screenshot_BitmapUtils_nativeCompareBitmap
     AndroidBitmap_unlockPixels(env, bitmapPre);
     AndroidBitmap_unlockPixels(env, bitmapBack);
     return newHeight - startOffset - 1;
+}
+
+extern "C"
+JNIEXPORT jdouble JNICALL Java_com_miui_screenshot_BitmapUtils_nativeGetSimilarity
+        (JNIEnv *env, jclass bitmapUtilClass,
+                jobject bitmapPre, jint startYPre,
+                jobject bitmapBack, jint startYBack,
+                jint heightBack, jdouble threshold) {
+    if (startYPre < 0 || startYBack < 0) {
+        LOGE("nativeGetSimilarity startYPre %d, startYBack %d ", startYPre, startYBack);
+        return -1.0f;
+    }
+    AndroidBitmapInfo bitmapInfo;
+    if ((AndroidBitmap_getInfo(env, bitmapPre, &bitmapInfo)) < 0) {
+        return -1.0f;
+    }
+    void *bitmapPixels;
+    if ((AndroidBitmap_lockPixels(env, bitmapPre, &bitmapPixels)) < 0) {
+        return -1.0f;
+    }
+    AndroidBitmapInfo bitmapInfo2;
+    if ((AndroidBitmap_getInfo(env, bitmapBack, &bitmapInfo2)) < 0) {
+        AndroidBitmap_unlockPixels(env, bitmapPre);
+        return -1.0f;
+    }
+    void *bitmapPixels2;
+    if ((AndroidBitmap_lockPixels(env, bitmapBack, &bitmapPixels2)) < 0) {
+        AndroidBitmap_unlockPixels(env, bitmapPre);
+        return -1.0f;
+    }
+    jint newWidth = bitmapInfo.width;
+    jint newHeight = bitmapInfo.height;
+    jint newWidth2 = bitmapInfo2.width;
+    jint newHeight2 = bitmapInfo2.height;
+    jint stride = bitmapInfo.stride;
+    jint stride2 = bitmapInfo2.stride;
+    if (startYPre + heightBack > newHeight) {
+        AndroidBitmap_unlockPixels(env, bitmapPre);
+        AndroidBitmap_unlockPixels(env, bitmapBack);
+        LOGE("nativeGetSimilarity startYPre + heightBack >= newHeight");
+        return -1.0f;
+    }
+    if (startYBack + heightBack > newHeight2) {
+        AndroidBitmap_unlockPixels(env, bitmapPre);
+        AndroidBitmap_unlockPixels(env, bitmapBack);
+        LOGE("nativeGetSimilarity startYBack + heightBack >= newHeight2");
+        return -1.0f;
+    }
+    if (newHeight != newHeight2 || newWidth != newWidth2) {
+        AndroidBitmap_unlockPixels(env, bitmapPre);
+        AndroidBitmap_unlockPixels(env, bitmapBack);
+        LOGE("nativeGetSimilarity newHeight != newHeight2 || newWidth != newWidth2");
+        return -1.0f;
+    }
+    long thresholdValue = heightBack * newWidth * threshold;
+    long sumNotSame = 0;
+    for (int lineIndex = 0; lineIndex < heightBack; lineIndex ++) {
+        jint linePre = startYPre + lineIndex;
+        jint lineBack = startYBack + lineIndex;
+        jint* linePrePixels = (jint *)((jbyte*) bitmapPixels + linePre * stride);
+        jint* lineBackPixels = (jint *)((jbyte*) bitmapPixels2 + lineBack * stride2);
+        for (int col = 0; col < newWidth; col ++) {
+            jint pixelPre = *(linePrePixels + col);
+            jint pixelBack = *(lineBackPixels + col);
+            if (pixelPre ^ pixelBack) {
+                sumNotSame ++;
+                if (thresholdValue <= sumNotSame) {
+                    break;
+                }
+            }
+        }
+        if (thresholdValue <= sumNotSame) {
+            break;
+        }
+    }
+    AndroidBitmap_unlockPixels(env, bitmapPre);
+    AndroidBitmap_unlockPixels(env, bitmapBack);
+    return sumNotSame * 1.0 / (heightBack * newWidth);
 }
 
 extern "C"

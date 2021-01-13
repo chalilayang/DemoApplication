@@ -8,14 +8,17 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.miui.screenshot.BitmapUtils;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -50,23 +53,23 @@ public class RenderScriptActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int value = compareBitmap(mBitmaps[0], mBitmaps[1]);
-                Log.i(TAG, "onClick: value " + value + " " + mBitmaps[0].getHeight());
-                Rect rect = new Rect();
-                rect.left = 0;
-                rect.top = value;
-                rect.right = mBitmaps[0].getWidth() - 1;
-                rect.bottom = mBitmaps[0].getHeight();
-                image1.setImageBitmap(drawRectOnBitmap(mBitmaps[0], rect));
-                Bitmap bitmapa = createBitmapRegion(mBitmaps[0], rect);
-                image3.setImageBitmap(bitmapa);
-                int[] p1 = createBitmapPixels(mBitmaps[0], rect);
-                rect.top = 0;
-                rect.bottom = mBitmaps[0].getHeight() - value;
-                image2.setImageBitmap(drawRectOnBitmap(mBitmaps[1], rect));
-                Bitmap bitmapb = createBitmapRegion(mBitmaps[1], rect);
-                image4.setImageBitmap(bitmapb);
-                int[] p2 = createBitmapPixels(mBitmaps[1], rect);
+//                int value = BitmapUtils.nativeCompareBitmap(mBitmaps[0], mBitmaps[1], 0.1f);
+//                Log.i(TAG, "onClick: value " + value + " " + mBitmaps[0].getHeight());
+//                Rect rect = new Rect();
+//                rect.left = 0;
+//                rect.top = value;
+//                rect.right = mBitmaps[0].getWidth() - 1;
+//                rect.bottom = mBitmaps[0].getHeight();
+//                if (rect.height() > 0) {
+//                    image1.setImageBitmap(drawRectOnBitmap(mBitmaps[0], rect));
+//                    Bitmap bitmapa = createBitmapRegion(mBitmaps[0], rect);
+//                    image3.setImageBitmap(bitmapa);
+//                    rect.top = 0;
+//                    rect.bottom = mBitmaps[0].getHeight() - value;
+//                    image2.setImageBitmap(drawRectOnBitmap(mBitmaps[1], rect));
+//                    Bitmap bitmapb = createBitmapRegion(mBitmaps[1], rect);
+//                    image4.setImageBitmap(bitmapb);
+//                }
 
 //                ViewGroup.MarginLayoutParams layoutParams
 //                        = (ViewGroup.MarginLayoutParams) image2.getLayoutParams();
@@ -76,6 +79,12 @@ public class RenderScriptActivity extends AppCompatActivity {
 //                image2.setAlpha(0.6f);
 //
 //                image3.setImageBitmap(dddBitmap(layoutParams.topMargin));
+
+//                long start = SystemClock.elapsedRealtime();
+//                double sim = BitmapUtils.nativeGetSimilarity(
+//                        mBitmaps[0], 455, mBitmaps[1], 0, 2188 - 455, 0.01);
+//                Log.i(TAG, "onClick: sim " + new BigDecimal(sim+"")
+//                        + " cost " + (SystemClock.elapsedRealtime() - start));
             }
         });
         fab = findViewById(R.id.fab2);
