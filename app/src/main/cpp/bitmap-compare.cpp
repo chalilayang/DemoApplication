@@ -11,28 +11,31 @@
 #define LOGF(...) __android_log_print(ANDROID_LOG_FATAL,TAG ,__VA_ARGS__) // 定义LOGF类型
 
 extern "C"
-jdouble getSimilarity(
+jdouble getDiffRate(
         jbyte* bitmapPixelsPre, jint startYPre, jint stridePre,
         jbyte* bitmapPixelsBack, jint startYBack, jint strideBack,
-        jint startX, jint width, jint height, jfloat threshold) {
+        jint startX, jint width, jint height, jfloat threshold, jint sampleSize) {
     long thresholdValue = height * width * threshold;
     long sumNotSame = 0;
-    for (int lineIndex = 0; lineIndex < height; lineIndex ++) {
+    if (sampleSize < 1) {
+        sampleSize = 1;
+    }
+    for (int lineIndex = 0; lineIndex < height; lineIndex = lineIndex + sampleSize) {
         jint linePre = startYPre + lineIndex;
         jint lineBack = startYBack + lineIndex;
         jint* linePrePixels = (jint *)(bitmapPixelsPre + linePre * stridePre);
         jint* lineBackPixels = (jint *)(bitmapPixelsBack + lineBack * strideBack);
-        for (int col = startX, count = startX + width; col < count; col ++) {
+        for (int col = startX, count = startX + width; col < count; col = col + sampleSize) {
             jint pixelPre = *(linePrePixels + col);
             jint pixelBack = *(lineBackPixels + col);
             if (pixelPre != pixelBack) {
-                sumNotSame ++;
-                if (thresholdValue <= sumNotSame) {
+                sumNotSame = sumNotSame + sampleSize;
+                if (thresholdValue + 1 <= sumNotSame) {
                     break;
                 }
             }
         }
-        if (thresholdValue <= sumNotSame) {
+        if (thresholdValue + 1 <= sumNotSame) {
             break;
         }
     }
@@ -225,6 +228,62 @@ JNIEXPORT jint JNICALL Java_com_miui_screenshot_BitmapUtils_nativeCompareBitmap
 }
 
 extern "C"
+JNIEXPORT jint JNICALL Java_com_miui_screenshot_BitmapUtils_nativeCompareBitmapWithSimilarity
+        (JNIEnv *env, jclass bitmapUtilClass,
+         jobject bitmapPre, jobject bitmapBack, jfloat threshold) {
+    AndroidBitmapInfo bitmapInfo;
+    if ((AndroidBitmap_getInfo(env, bitmapPre, &bitmapInfo)) < 0) {
+        return 0;
+    }
+    void *bitmapPixels;
+    if ((AndroidBitmap_lockPixels(env, bitmapPre, &bitmapPixels)) < 0) {
+        return 0;
+    }
+    AndroidBitmapInfo bitmapInfo2;
+    if ((AndroidBitmap_getInfo(env, bitmapBack, &bitmapInfo2)) < 0) {
+        AndroidBitmap_unlockPixels(env, bitmapPre);
+        return 0;
+    }
+    void *bitmapPixels2;
+    if ((AndroidBitmap_lockPixels(env, bitmapBack, &bitmapPixels2)) < 0) {
+        AndroidBitmap_unlockPixels(env, bitmapPre);
+        return 0;
+    }
+    jint newWidth = bitmapInfo.width;
+    jint newHeight = bitmapInfo.height;
+    jint newWidth2 = bitmapInfo2.width;
+    jint newHeight2 = bitmapInfo2.height;
+    jint stride = bitmapInfo.stride;
+    jint stride2 = bitmapInfo2.stride;
+    LOGE("nativeCompareBitmapWithSimilarity stride %d, threshold %d ", stride2, threshold);
+    if (newHeight != newHeight2 || newWidth != newWidth2) {
+        AndroidBitmap_unlockPixels(env, bitmapPre);
+        AndroidBitmap_unlockPixels(env, bitmapBack);
+        return 0;
+    }
+    jdouble minValue = 100;
+    jdouble minIndex = -1;
+    for (jint lineBack = newHeight - 1; lineBack >= 0; lineBack --) {
+        jint lineBottomPre = newHeight - 1;
+        jint lineTopPre = lineBottomPre - lineBack;
+        jint lineBottomBack = lineBack;
+        jint lineTopBack = 0;
+        jint height = lineBottomBack - lineTopBack;
+        jdouble diffRate = getDiffRate(
+                (jbyte *) bitmapPixels, lineTopPre, stride,
+                (jbyte *) bitmapPixels2, lineTopBack, stride2,
+                0, newWidth, height, threshold, 10);
+        if (diffRate < minValue) {
+            minValue = diffRate;
+            minIndex = lineBack;
+        }
+    }
+    AndroidBitmap_unlockPixels(env, bitmapPre);
+    AndroidBitmap_unlockPixels(env, bitmapBack);
+    return newHeight - minIndex - 1;
+}
+
+extern "C"
 JNIEXPORT jdouble JNICALL Java_com_miui_screenshot_BitmapUtils_nativeGetSimilarity
         (JNIEnv *env, jclass bitmapUtilClass,
                 jobject bitmapPre, jint startYPre,
@@ -276,13 +335,13 @@ JNIEXPORT jdouble JNICALL Java_com_miui_screenshot_BitmapUtils_nativeGetSimilari
         LOGE("nativeGetSimilarity newHeight != newHeight2 || newWidth != newWidth2");
         return -1.0f;
     }
-    jdouble diffRate = getSimilarity(
-            (jbyte*)bitmapPixels, startYPre, stride,
-            (jbyte*)bitmapPixels2, startYBack, stride2,
-            0, newWidth, height, threshold);
+    jdouble diffRate = getDiffRate(
+            (jbyte *) bitmapPixels, startYPre, stride,
+            (jbyte *) bitmapPixels2, startYBack, stride2,
+            0, newWidth, height, threshold, 1);
     AndroidBitmap_unlockPixels(env, bitmapPre);
     AndroidBitmap_unlockPixels(env, bitmapBack);
-    return diffRate;
+    return 1 - diffRate;
 }
 
 extern "C"

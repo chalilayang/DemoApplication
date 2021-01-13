@@ -50,26 +50,28 @@ public class RenderScriptActivity extends AppCompatActivity {
         image1.setImageBitmap(mBitmaps[0]);
         image2.setImageBitmap(mBitmaps[1]);
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-//                int value = BitmapUtils.nativeCompareBitmap(mBitmaps[0], mBitmaps[1], 0.01f);
-//                Log.i(TAG, "onClick: value " + value + " " + mBitmaps[0].getHeight());
-//                Rect rect = new Rect();
-//                rect.left = 0;
-//                rect.top = value;
-//                rect.right = mBitmaps[0].getWidth() - 1;
-//                rect.bottom = mBitmaps[0].getHeight();
-//                if (rect.height() > 0) {
-//                    image1.setImageBitmap(drawRectOnBitmap(mBitmaps[0], rect));
-//                    Bitmap bitmapa = createBitmapRegion(mBitmaps[0], rect);
-//                    image3.setImageBitmap(bitmapa);
-//                    rect.top = 0;
-//                    rect.bottom = mBitmaps[0].getHeight() - value;
-//                    image2.setImageBitmap(drawRectOnBitmap(mBitmaps[1], rect));
-//                    Bitmap bitmapb = createBitmapRegion(mBitmaps[1], rect);
-//                    image4.setImageBitmap(bitmapb);
-//                }
+        fab.setOnClickListener(view -> {
+            long start = SystemClock.elapsedRealtime();
+            int value = BitmapUtils.nativeCompareBitmapWithSimilarity(mBitmaps[0], mBitmaps[1], 0.01f);
+            double similarity = BitmapUtils.nativeGetSimilarity(
+                    mBitmaps[0], value, mBitmaps[1], 0, mBitmaps[1].getHeight() - value, 0.01f);
+            Log.i(TAG, "onClick: value " + value + " similarity " + similarity + " " + mBitmaps[0].getHeight()
+                    + " cost " + (SystemClock.elapsedRealtime() - start));
+            Rect rect = new Rect();
+            rect.left = 0;
+            rect.top = value;
+            rect.right = mBitmaps[0].getWidth() - 1;
+            rect.bottom = mBitmaps[0].getHeight();
+            if (rect.height() > 0) {
+                image1.setImageBitmap(drawRectOnBitmap(mBitmaps[0], rect));
+                Bitmap bitmapa = createBitmapRegion(mBitmaps[0], rect);
+                image3.setImageBitmap(bitmapa);
+                rect.top = 0;
+                rect.bottom = mBitmaps[0].getHeight() - value;
+                image2.setImageBitmap(drawRectOnBitmap(mBitmaps[1], rect));
+                Bitmap bitmapb = createBitmapRegion(mBitmaps[1], rect);
+                image4.setImageBitmap(bitmapb);
+            }
 
 //                ViewGroup.MarginLayoutParams layoutParams
 //                        = (ViewGroup.MarginLayoutParams) image2.getLayoutParams();
@@ -80,12 +82,19 @@ public class RenderScriptActivity extends AppCompatActivity {
 //
 //                image3.setImageBitmap(dddBitmap(layoutParams.topMargin));
 
-                long start = SystemClock.elapsedRealtime();
-                double sim = BitmapUtils.nativeGetSimilarity(
-                        mBitmaps[0], 453, mBitmaps[1], 0, 2188 - 453, 0.01f);
-                Log.i(TAG, "onClick: sim " + new BigDecimal(sim+"")
-                        + " cost " + (SystemClock.elapsedRealtime() - start));
-            }
+//                long start = SystemClock.elapsedRealtime();
+//                double min = Double.MAX_VALUE;
+//                int minIndex = -1;
+//                for (int index = 0; index < 2188; index ++) {
+//                    double sim = BitmapUtils.nativeGetSimilarity(
+//                            mBitmaps[0], index, mBitmaps[1], 0, 2188 - index, 0.01f);
+//                    if (sim < min) {
+//                        minIndex = index;
+//                        min = sim;
+//                    }
+//                    Log.i(TAG, "onClick: Similarity " + index + " " + new BigDecimal(sim+""));
+//                }
+//                Log.i(TAG, "onClick: Similarity minIndex " + minIndex + " cost " + (SystemClock.elapsedRealtime() - start));
         });
         fab = findViewById(R.id.fab2);
         fab.setOnClickListener(view -> {
@@ -147,7 +156,7 @@ public class RenderScriptActivity extends AppCompatActivity {
         Bitmap[] result = new Bitmap[2];
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeResource(getResources(), R.drawable.r1, options);
+        BitmapFactory.decodeResource(getResources(), R.drawable.r5, options);
         int width = options.outWidth;
         int height = options.outHeight;
         try {
