@@ -14,7 +14,7 @@ extern "C"
 jdouble getSimilarity(
         jbyte* bitmapPixelsPre, jint startYPre, jint stridePre,
         jbyte* bitmapPixelsBack, jint startYBack, jint strideBack,
-        jint width, jint height, jfloat threshold) {
+        jint startX, jint width, jint height, jfloat threshold) {
     long thresholdValue = height * width * threshold;
     long sumNotSame = 0;
     for (int lineIndex = 0; lineIndex < height; lineIndex ++) {
@@ -22,7 +22,7 @@ jdouble getSimilarity(
         jint lineBack = startYBack + lineIndex;
         jint* linePrePixels = (jint *)(bitmapPixelsPre + linePre * stridePre);
         jint* lineBackPixels = (jint *)(bitmapPixelsBack + lineBack * strideBack);
-        for (int col = 0; col < width; col ++) {
+        for (int col = startX, count = startX + width; col < count; col ++) {
             jint pixelPre = *(linePrePixels + col);
             jint pixelBack = *(lineBackPixels + col);
             if (pixelPre != pixelBack) {
@@ -279,7 +279,7 @@ JNIEXPORT jdouble JNICALL Java_com_miui_screenshot_BitmapUtils_nativeGetSimilari
     jdouble diffRate = getSimilarity(
             (jbyte*)bitmapPixels, startYPre, stride,
             (jbyte*)bitmapPixels2, startYBack, stride2,
-            newWidth, height, threshold);
+            0, newWidth, height, threshold);
     AndroidBitmap_unlockPixels(env, bitmapPre);
     AndroidBitmap_unlockPixels(env, bitmapBack);
     return diffRate;
