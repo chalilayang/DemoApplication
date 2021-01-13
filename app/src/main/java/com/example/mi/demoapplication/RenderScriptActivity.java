@@ -82,7 +82,7 @@ public class RenderScriptActivity extends AppCompatActivity {
 
                 long start = SystemClock.elapsedRealtime();
                 double sim = BitmapUtils.nativeGetSimilarity(
-                        mBitmaps[0], 454, mBitmaps[1], 0, 2188 - 454, 0.01);
+                        mBitmaps[0], 453, mBitmaps[1], 0, 2188 - 453, 0.01f);
                 Log.i(TAG, "onClick: sim " + new BigDecimal(sim+"")
                         + " cost " + (SystemClock.elapsedRealtime() - start));
             }

@@ -12,20 +12,20 @@
 
 extern "C"
 jdouble getSimilarity(
-        jbyte* pixelPre, jint startLinePre, jint stridePre,
-        jbyte* pixelBack, jint startLineBack, jint strideBack,
-        jint width, jint height, jint threshold) {
+        jbyte* bitmapPixelsPre, jint startYPre, jint stridePre,
+        jbyte* bitmapPixelsBack, jint startYBack, jint strideBack,
+        jint width, jint height, jfloat threshold) {
     long thresholdValue = height * width * threshold;
     long sumNotSame = 0;
     for (int lineIndex = 0; lineIndex < height; lineIndex ++) {
-        jint linePre = startLinePre + lineIndex;
-        jint lineBack = startLineBack + lineIndex;
-        jint* linePrePixels = (jint *)((jbyte*) pixelPre + linePre * stridePre);
-        jint* lineBackPixels = (jint *)((jbyte*) pixelBack + lineBack * strideBack);
+        jint linePre = startYPre + lineIndex;
+        jint lineBack = startYBack + lineIndex;
+        jint* linePrePixels = (jint *)(bitmapPixelsPre + linePre * stridePre);
+        jint* lineBackPixels = (jint *)(bitmapPixelsBack + lineBack * strideBack);
         for (int col = 0; col < width; col ++) {
-            jint pixelPreValue = *(linePrePixels + col);
-            jint pixelBackValue = *(lineBackPixels + col);
-            if (pixelPreValue != pixelBackValue) {
+            jint pixelPre = *(linePrePixels + col);
+            jint pixelBack = *(lineBackPixels + col);
+            if (pixelPre != pixelBack) {
                 sumNotSame ++;
                 if (thresholdValue <= sumNotSame) {
                     break;
@@ -229,7 +229,7 @@ JNIEXPORT jdouble JNICALL Java_com_miui_screenshot_BitmapUtils_nativeGetSimilari
         (JNIEnv *env, jclass bitmapUtilClass,
                 jobject bitmapPre, jint startYPre,
                 jobject bitmapBack, jint startYBack,
-                jint height, jdouble threshold) {
+                jint height, jfloat threshold) {
     if (startYPre < 0 || startYBack < 0) {
         LOGE("nativeGetSimilarity startYPre %d, startYBack %d ", startYPre, startYBack);
         return -1.0f;
@@ -276,30 +276,13 @@ JNIEXPORT jdouble JNICALL Java_com_miui_screenshot_BitmapUtils_nativeGetSimilari
         LOGE("nativeGetSimilarity newHeight != newHeight2 || newWidth != newWidth2");
         return -1.0f;
     }
-    long thresholdValue = height * newWidth * threshold;
-    long sumNotSame = 0;
-    for (int lineIndex = 0; lineIndex < height; lineIndex ++) {
-        jint linePre = startYPre + lineIndex;
-        jint lineBack = startYBack + lineIndex;
-        jint* linePrePixels = (jint *)((jbyte*) bitmapPixels + linePre * stride);
-        jint* lineBackPixels = (jint *)((jbyte*) bitmapPixels2 + lineBack * stride2);
-        for (int col = 0; col < newWidth; col ++) {
-            jint pixelPre = *(linePrePixels + col);
-            jint pixelBack = *(lineBackPixels + col);
-            if (pixelPre != pixelBack) {
-                sumNotSame ++;
-                if (thresholdValue <= sumNotSame) {
-                    break;
-                }
-            }
-        }
-        if (thresholdValue <= sumNotSame) {
-            break;
-        }
-    }
+    jdouble diffRate = getSimilarity(
+            (jbyte*)bitmapPixels, startYPre, stride,
+            (jbyte*)bitmapPixels2, startYBack, stride2,
+            newWidth, height, threshold);
     AndroidBitmap_unlockPixels(env, bitmapPre);
     AndroidBitmap_unlockPixels(env, bitmapBack);
-    return sumNotSame * 1.0 / (height * newWidth);
+    return diffRate;
 }
 
 extern "C"

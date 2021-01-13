@@ -186,7 +186,7 @@ public class BitmapUtils {
     public static native int compareByte(byte[] pixels1, byte[] pixels2, int width, int height);
     public static native int getBitmapStride(Bitmap bitmap);
     public static native double nativeGetSimilarity(
-            Bitmap bitmapPre, int startYPre, Bitmap bitmapBack, int startYBack, int height, double threshold);
+            Bitmap bitmapPre, int startYPre, Bitmap bitmapBack, int startYBack, int height, float threshold);
     public static native int nativeCompareBitmap(Bitmap bitmap, Bitmap bitmap2, float threshold);
     public static native int nativeCompareBitmapRange(Bitmap bitmapPre, int lineTopPre, int lineBottomPre,
                                                       Bitmap bitmapBack, int lineTopBack, int lineBottomBack, int step);
