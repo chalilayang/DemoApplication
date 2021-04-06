@@ -2,12 +2,10 @@ package com.render.demo;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.view.Surface.OutOfResourcesException;
 import android.widget.ProgressBar;
 
 public class GLProgressBar extends ProgressBar {
-	private static final String TAG = "GLProgressBar";
 	ViewRenderer viewRenderer;
 
 	public GLProgressBar(Context context) {
@@ -23,9 +21,7 @@ public class GLProgressBar extends ProgressBar {
 		if (viewRenderer != null && viewRenderer.isAvailable()) {
 			Canvas surfaceCanvas = null;
 			try {
-				invalidate();
 				surfaceCanvas = viewRenderer.lockCanvas(true);
-				surfaceCanvas.drawColor(Color.BLUE);
 				super.draw(surfaceCanvas);
 			} catch (OutOfResourcesException e) {
 				e.printStackTrace();
@@ -35,7 +31,7 @@ public class GLProgressBar extends ProgressBar {
 				}
 			}
 		} else {
-			super.draw(canvas);
+			invalidate();
 		}
 	}
 }
