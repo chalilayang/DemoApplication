@@ -1,9 +1,7 @@
 package com.render.demo;
 
 import android.content.Context;
-import android.graphics.Canvas;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -38,11 +36,5 @@ public class RenderFrameLayout extends FrameLayout {
         glProgressBar = new GLProgressBar(context);
         glProgressBar.setViewRenderer(mViewRenderer);
         addView(glProgressBar);
-    }
-
-    @Override
-    protected void dispatchDraw(Canvas canvas) {
-        Log.i(TAG, "dispatchDraw: ");
-        super.dispatchDraw(canvas);
     }
 }

@@ -13,14 +13,15 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 public class ViewRenderer implements GLSurfaceView.Renderer, SurfaceTexture.OnFrameAvailableListener {
-	private static float sSquareCoordinate[] = {
+	private static final String TAG = "ViewRenderer";
+	private static final float[] sSquareCoordinate = {
 			-1.0f, -1.0f,
 			1.0f, -1.0f,
 			-1.0f, 1.0f,
 			1.0f, 1.0f,
 	};
 
-	private float mTextureCoordinate[] = {
+	private static final float[] mTextureCoordinate = {
 			0.0f, 1.0f,
 			1.0f, 1.0f,
 			0.0f, 0.0f,
@@ -28,14 +29,14 @@ public class ViewRenderer implements GLSurfaceView.Renderer, SurfaceTexture.OnFr
 	};
 
 	private int glSurfaceTex;
-	private Context context;
-	private SurfaceTexture surfaceTexture = null;
+	private final Context context;
+	private SurfaceTexture surfaceTexture;
 	private Surface surface;
 
 	private ShaderProgram mProgram;
 
-	private VertexArray mPositionArray;
-	private VertexArray mTextureCoordinateArray;
+	private final VertexArray mPositionArray;
+	private final VertexArray mTextureCoordinateArray;
 
 	private volatile boolean needRedraw;
 
@@ -69,7 +70,9 @@ public class ViewRenderer implements GLSurfaceView.Renderer, SurfaceTexture.OnFr
 	@Override
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
 		surface = null;
-		surfaceTexture = null;
+		if (surfaceTexture != null) {
+			surfaceTexture.release();
+		}
 		int[] texture = new int[1];
 		TextureHelper.createExternalSurfaceTexture(texture, width, height);
 		glSurfaceTex = texture[0];

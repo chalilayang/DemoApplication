@@ -3,7 +3,6 @@ package com.render.demo;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.util.Log;
 import android.view.Surface.OutOfResourcesException;
 import android.widget.ProgressBar;
 
@@ -19,33 +18,21 @@ public class GLProgressBar extends ProgressBar {
 		viewRenderer = renderer;
 	}
 
-//	@Override
-//	protected void onDraw(Canvas canvas) {
-//		Log.e(TAG, "onDraw: ", new Throwable());
-//		if (viewRenderer != null && viewRenderer.isAvailable()) {
-//			try {
-//				final Canvas surfaceCanvas = viewRenderer.lockCanvas(false);
-//				Log.i(TAG, "onDraw: isHardwareAccelerated " + surfaceCanvas.isHardwareAccelerated());
-//				super.onDraw(surfaceCanvas);
-//				viewRenderer.unlockCanvasAndPost(surfaceCanvas);
-//			} catch (OutOfResourcesException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//	}
-
 	@Override
 	public void draw(Canvas canvas) {
 		if (viewRenderer != null && viewRenderer.isAvailable()) {
+			Canvas surfaceCanvas = null;
 			try {
 				invalidate();
-				final Canvas surfaceCanvas = viewRenderer.lockCanvas(true);
-				Log.i(TAG, "onDraw: isHardwareAccelerated " + surfaceCanvas.isHardwareAccelerated());
+				surfaceCanvas = viewRenderer.lockCanvas(true);
 				surfaceCanvas.drawColor(Color.BLUE);
 				super.draw(surfaceCanvas);
-				viewRenderer.unlockCanvasAndPost(surfaceCanvas);
 			} catch (OutOfResourcesException e) {
 				e.printStackTrace();
+			} finally {
+				if (surfaceCanvas != null) {
+					viewRenderer.unlockCanvasAndPost(surfaceCanvas);
+				}
 			}
 		} else {
 			super.draw(canvas);
