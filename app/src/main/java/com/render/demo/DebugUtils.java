@@ -78,6 +78,36 @@ public class DebugUtils {
         return renderNode;
     }
 
+    public static boolean getRecreateDisplayList(View view) {
+        if (view == null) {
+            return false;
+        }
+        boolean recreateDisplayList = false;
+        try {
+            recreateDisplayList = (Boolean) ReflectUtil.getObjectField(view, View.class, "mRecreateDisplayList");
+            Log.i(TAG, "getRecreateDisplayList: " + recreateDisplayList);
+        } catch (Exception e) {
+            Log.e(TAG, "getRecreateDisplayList: " + e);
+            e.printStackTrace();
+        }
+        return recreateDisplayList;
+    }
+
+    public static int getPrivateFlag(View view) {
+        if (view == null) {
+            return -1;
+        }
+        int privateFlag = -1;
+        try {
+            privateFlag = (int) ReflectUtil.getObjectField(view, View.class, "mPrivateFlags");
+            Log.i(TAG, "getPrivateFlag: " + privateFlag);
+        } catch (Exception e) {
+            Log.e(TAG, "getPrivateFlag: " + e);
+            e.printStackTrace();
+        }
+        return privateFlag;
+    }
+
     public static boolean displayListValid(Object renderNode) {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
             return hasDisplayList(renderNode);

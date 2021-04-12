@@ -1,6 +1,7 @@
 package com.render.demo;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.util.ArraySet;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -56,14 +57,19 @@ public class RenderFrameLayout extends FrameLayout {
                 super.beforeHookedMethod(param);
                 if (set.contains(param.thisObject.getClass())) {
                     Object renderNode = DebugUtils.getRenderNode((View)param.thisObject);
-//                    boolean hasDisplayList = DebugUtils.hasDisplayList(renderNode);
-                    Log.i(TAG, "beforeHookedMethod: " + param.thisObject
-                            + " " + DebugUtils.displayListValid(renderNode));
+                    boolean displayListValid = DebugUtils.displayListValid(renderNode);
+                    boolean recreateDisplayList = DebugUtils.getRecreateDisplayList((View)param.thisObject);
+                    int privateFlag = DebugUtils.getPrivateFlag((View)param.thisObject);
+                    boolean flag = (privateFlag & 0x00008000) == 0;
+                    Log.i(TAG, "beforeHookedMethod: displayListValid " + displayListValid
+                            + " recreateDisplayList " + recreateDisplayList + " flag " + flag + " " + param.method.getName());
                 }
             }
         }
         DexposedBridge.findAndHookMethod(View.class,
                 "updateDisplayListIfDirty", new ViewMethodHook());
+        DexposedBridge.findAndHookMethod(View.class,
+                "draw", Canvas.class, new ViewMethodHook());
         class ConstructMethodHook extends XC_MethodHook{
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
