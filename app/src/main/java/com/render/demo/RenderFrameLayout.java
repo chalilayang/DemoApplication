@@ -1,11 +1,19 @@
 package com.render.demo;
 
 import android.content.Context;
+import android.util.ArraySet;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.example.mi.view.GlTextureView;
+
+import java.util.Set;
+
+import de.robv.android.xposed.DexposedBridge;
+import de.robv.android.xposed.XC_MethodHook;
 
 /**
  * Created by chalilayang on 20-8-11 下午9:41.
@@ -36,5 +44,46 @@ public class RenderFrameLayout extends FrameLayout {
         glProgressBar = new GLProgressBar(context);
         glProgressBar.setViewRenderer(mViewRenderer);
         addView(glProgressBar);
+    }
+
+    public static void hook() {
+        final Set<Class<?>> set = new ArraySet<>();
+//        set.add(RenderFrameLayout.class);
+        set.add(GLProgressBar.class);
+        class ViewMethodHook extends XC_MethodHook{
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                super.beforeHookedMethod(param);
+                if (set.contains(param.thisObject.getClass())) {
+                    Object renderNode = DebugUtils.getRenderNode((View)param.thisObject);
+//                    boolean hasDisplayList = DebugUtils.hasDisplayList(renderNode);
+                    Log.i(TAG, "beforeHookedMethod: " + param.thisObject
+                            + " " + DebugUtils.displayListValid(renderNode));
+                }
+            }
+        }
+        DexposedBridge.findAndHookMethod(View.class,
+                "updateDisplayListIfDirty", new ViewMethodHook());
+        class ConstructMethodHook extends XC_MethodHook{
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                super.afterHookedMethod(param);
+                if (DebugUtils.sRenderNodeClazz == null) {
+                    Object renderNode = null;
+                    try {
+                        renderNode = DebugUtils.getRenderNode((View)param.thisObject);
+                    } catch (Exception e) {
+                        Log.e(TAG, "afterHookedMethod: ", e);
+                        e.printStackTrace();
+                    }
+                    if (renderNode != null) {
+                        DebugUtils.sRenderNodeClazz = renderNode.getClass();
+                    }
+                } else {
+                    DexposedBridge.unhookMethod(param.method, this);
+                }
+            }
+        }
+        DexposedBridge.hookAllConstructors(View.class, new ConstructMethodHook());
     }
 }
