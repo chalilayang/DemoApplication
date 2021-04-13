@@ -2,6 +2,8 @@ package com.render.demo;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.drawable.AnimatedVectorDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.ArraySet;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -51,7 +53,7 @@ public class RenderFrameLayout extends FrameLayout {
         final Set<Class<?>> set = new ArraySet<>();
 //        set.add(RenderFrameLayout.class);
         set.add(GLProgressBar.class);
-        class ViewMethodHook extends XC_MethodHook{
+        class ViewMethodHook extends XC_MethodHook {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
@@ -62,14 +64,31 @@ public class RenderFrameLayout extends FrameLayout {
                     int privateFlag = DebugUtils.getPrivateFlag((View)param.thisObject);
                     boolean flag = (privateFlag & 0x00008000) == 0;
                     Log.i(TAG, "beforeHookedMethod: displayListValid " + displayListValid
-                            + " recreateDisplayList " + recreateDisplayList + " flag " + flag + " " + param.method.getName());
+                            + " recreateDisplayList " + recreateDisplayList + " flag "
+                            + flag + " " + param.method.getName());
                 }
             }
         }
-        DexposedBridge.findAndHookMethod(View.class,
-                "updateDisplayListIfDirty", new ViewMethodHook());
-        DexposedBridge.findAndHookMethod(View.class,
-                "draw", Canvas.class, new ViewMethodHook());
+//        DexposedBridge.findAndHookMethod(View.class,
+//                "updateDisplayListIfDirty", new ViewMethodHook());
+//        DexposedBridge.findAndHookMethod(View.class,
+//                "draw", Canvas.class, new ViewMethodHook());
+        class DrawableMethodHook extends XC_MethodHook {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                super.beforeHookedMethod(param);
+//                Drawable drawable = (Drawable) param.thisObject;
+//                Log.i(TAG, "beforeHookedMethod: " + drawable);
+            }
+        }
+        DexposedBridge.hookAllConstructors(Drawable.class, new DrawableMethodHook());
+        DexposedBridge.findAndHookMethod(AnimatedVectorDrawable.class, "draw", Canvas.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                super.beforeHookedMethod(param);
+                Log.i(TAG, "beforeHookedMethod: " + param.method.getName());
+            }
+        });
         class ConstructMethodHook extends XC_MethodHook{
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {

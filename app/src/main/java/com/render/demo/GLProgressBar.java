@@ -15,23 +15,4 @@ public class GLProgressBar extends ProgressBar {
 	public void setViewRenderer(ViewRenderer renderer) {
 		viewRenderer = renderer;
 	}
-
-	@Override
-	public void draw(Canvas canvas) {
-		if (viewRenderer != null && viewRenderer.isAvailable()) {
-			Canvas surfaceCanvas = null;
-			try {
-				surfaceCanvas = viewRenderer.lockCanvas(true);
-				super.draw(surfaceCanvas);
-			} catch (OutOfResourcesException e) {
-				e.printStackTrace();
-			} finally {
-				if (surfaceCanvas != null) {
-					viewRenderer.unlockCanvasAndPost(surfaceCanvas);
-				}
-			}
-		} else {
-			invalidate();
-		}
-	}
 }
