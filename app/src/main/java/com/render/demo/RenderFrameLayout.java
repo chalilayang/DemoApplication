@@ -3,24 +3,15 @@ package com.render.demo;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.drawable.AnimatedVectorDrawable;
-import android.graphics.drawable.Drawable;
-import android.util.ArraySet;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.TextView;
+import android.widget.ProgressBar;
 
 import com.example.mi.view.GlTextureView;
-
-import java.util.Set;
-
-import androidx.annotation.NonNull;
-import de.robv.android.xposed.DexposedBridge;
-import de.robv.android.xposed.XC_MethodHook;
 
 /**
  * Created by chalilayang on 20-8-11 下午9:41.
@@ -29,7 +20,6 @@ public class RenderFrameLayout extends FrameLayout {
     private static final String TAG = "RenderFrameLayout";
     private GlTextureView mRenderView;
     private ViewRenderer mViewRenderer;
-    GLProgressBar glProgressBar;
 
     public RenderFrameLayout(Context context) {
         this(context, null);
@@ -48,22 +38,13 @@ public class RenderFrameLayout extends FrameLayout {
         mRenderView.setRenderer(mViewRenderer);
         addView(mRenderView, new LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        glProgressBar = new GLProgressBar(context);
-        glProgressBar.setViewRenderer(mViewRenderer);
+        ProgressBar glProgressBar = new ProgressBar(context);
         addView(glProgressBar);
-//        TextView textView = new TextView(context);
-//        textView.setText("fffffff");
-//        textView.setTextColor(Color.RED);
-//        ValueAnimator animator = ValueAnimator.ofFloat(0, 1.0f);
-//        animator.setDuration(6000);
-//        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-//            @Override
-//            public void onAnimationUpdate(ValueAnimator animation) {
-//                textView.setText(animation.getAnimatedValue().toString());
-//            }
-//        });
-//        animator.start();
-//        addView(textView);
+    }
+
+    @Override
+    protected void dispatchDraw(Canvas canvas) {
+        super.dispatchDraw(canvas);
     }
 
     @Override
