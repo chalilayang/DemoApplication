@@ -4,12 +4,10 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ProgressBar;
 
 import com.example.mi.view.GlTextureView;
 
@@ -17,9 +15,8 @@ import com.example.mi.view.GlTextureView;
  * Created by chalilayang on 20-8-11 下午9:41.
  **/
 public class RenderFrameLayout extends FrameLayout {
-    private static final String TAG = "RenderFrameLayout";
-    private GlTextureView mRenderView;
-    private ViewRenderer mViewRenderer;
+    private final GlTextureView mRenderView;
+    private final ViewRenderer mViewRenderer;
 
     public RenderFrameLayout(Context context) {
         this(context, null);
@@ -38,13 +35,15 @@ public class RenderFrameLayout extends FrameLayout {
         mRenderView.setRenderer(mViewRenderer);
         addView(mRenderView, new LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        ProgressBar glProgressBar = new ProgressBar(context);
-        addView(glProgressBar);
     }
 
     @Override
-    protected void dispatchDraw(Canvas canvas) {
-        super.dispatchDraw(canvas);
+    public void addView(View child, int index, ViewGroup.LayoutParams params) {
+        int count = getChildCount();
+        if (count >= 2) {
+            throw new RuntimeException("only one child view");
+        }
+        super.addView(child, index, params);
     }
 
     @Override
@@ -54,11 +53,10 @@ public class RenderFrameLayout extends FrameLayout {
         } else {
             if (mViewRenderer.isAvailable()) {
                 Canvas surfaceCanvas = null;
-                boolean invalid = false;
                 try {
                     surfaceCanvas = mViewRenderer.lockCanvas(true);
                     surfaceCanvas.drawColor(Color.BLUE);
-                    invalid = super.drawChild(surfaceCanvas, child, drawingTime);
+                    super.drawChild(surfaceCanvas, child, drawingTime);
                 } catch (Surface.OutOfResourcesException e) {
                     e.printStackTrace();
                 } finally {
@@ -66,7 +64,6 @@ public class RenderFrameLayout extends FrameLayout {
                         mViewRenderer.unlockCanvasAndPost(surfaceCanvas);
                     }
                 }
-                Log.i(TAG, "drawChild: " + invalid);
             }
             invalidate();
             return false;
