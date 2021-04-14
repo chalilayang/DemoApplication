@@ -66,7 +66,7 @@ public class RenderFrameLayout extends FrameLayout {
                 }
             }
             invalidate();
-            return false;
+            return true;
         }
     }
 }
