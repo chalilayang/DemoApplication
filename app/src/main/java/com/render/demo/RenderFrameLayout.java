@@ -2,19 +2,23 @@ package com.render.demo;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.ArraySet;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import com.example.mi.view.GlTextureView;
 
 import java.util.Set;
 
+import androidx.annotation.NonNull;
 import de.robv.android.xposed.DexposedBridge;
 import de.robv.android.xposed.XC_MethodHook;
 
@@ -47,68 +51,44 @@ public class RenderFrameLayout extends FrameLayout {
         glProgressBar = new GLProgressBar(context);
         glProgressBar.setViewRenderer(mViewRenderer);
         addView(glProgressBar);
+//        TextView textView = new TextView(context);
+//        textView.setText("fffffff");
+//        textView.setTextColor(Color.RED);
+//        ValueAnimator animator = ValueAnimator.ofFloat(0, 1.0f);
+//        animator.setDuration(6000);
+//        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+//            @Override
+//            public void onAnimationUpdate(ValueAnimator animation) {
+//                textView.setText(animation.getAnimatedValue().toString());
+//            }
+//        });
+//        animator.start();
+//        addView(textView);
     }
 
-    public static void hook() {
-        final Set<Class<?>> set = new ArraySet<>();
-//        set.add(RenderFrameLayout.class);
-        set.add(GLProgressBar.class);
-        class ViewMethodHook extends XC_MethodHook {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                super.beforeHookedMethod(param);
-                if (set.contains(param.thisObject.getClass())) {
-                    Object renderNode = DebugUtils.getRenderNode((View)param.thisObject);
-                    boolean displayListValid = DebugUtils.displayListValid(renderNode);
-                    boolean recreateDisplayList = DebugUtils.getRecreateDisplayList((View)param.thisObject);
-                    int privateFlag = DebugUtils.getPrivateFlag((View)param.thisObject);
-                    boolean flag = (privateFlag & 0x00008000) == 0;
-                    Log.i(TAG, "beforeHookedMethod: displayListValid " + displayListValid
-                            + " recreateDisplayList " + recreateDisplayList + " flag "
-                            + flag + " " + param.method.getName());
-                }
-            }
-        }
-//        DexposedBridge.findAndHookMethod(View.class,
-//                "updateDisplayListIfDirty", new ViewMethodHook());
-//        DexposedBridge.findAndHookMethod(View.class,
-//                "draw", Canvas.class, new ViewMethodHook());
-        class DrawableMethodHook extends XC_MethodHook {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                super.beforeHookedMethod(param);
-//                Drawable drawable = (Drawable) param.thisObject;
-//                Log.i(TAG, "beforeHookedMethod: " + drawable);
-            }
-        }
-        DexposedBridge.hookAllConstructors(Drawable.class, new DrawableMethodHook());
-        DexposedBridge.findAndHookMethod(AnimatedVectorDrawable.class, "draw", Canvas.class, new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                super.beforeHookedMethod(param);
-                Log.i(TAG, "beforeHookedMethod: " + param.method.getName());
-            }
-        });
-        class ConstructMethodHook extends XC_MethodHook{
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                super.afterHookedMethod(param);
-                if (DebugUtils.sRenderNodeClazz == null) {
-                    Object renderNode = null;
-                    try {
-                        renderNode = DebugUtils.getRenderNode((View)param.thisObject);
-                    } catch (Exception e) {
-                        Log.e(TAG, "afterHookedMethod: ", e);
-                        e.printStackTrace();
+    @Override
+    protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
+        if (child.equals(mRenderView)) {
+            return super.drawChild(canvas, child, drawingTime);
+        } else {
+            if (mViewRenderer.isAvailable()) {
+                Canvas surfaceCanvas = null;
+                boolean invalid = false;
+                try {
+                    surfaceCanvas = mViewRenderer.lockCanvas(true);
+                    surfaceCanvas.drawColor(Color.BLUE);
+                    invalid = super.drawChild(surfaceCanvas, child, drawingTime);
+                } catch (Surface.OutOfResourcesException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (surfaceCanvas != null) {
+                        mViewRenderer.unlockCanvasAndPost(surfaceCanvas);
                     }
-                    if (renderNode != null) {
-                        DebugUtils.sRenderNodeClazz = renderNode.getClass();
-                    }
-                } else {
-                    DexposedBridge.unhookMethod(param.method, this);
                 }
+                Log.i(TAG, "drawChild: " + invalid);
             }
+            invalidate();
+            return false;
         }
-        DexposedBridge.hookAllConstructors(View.class, new ConstructMethodHook());
     }
 }
