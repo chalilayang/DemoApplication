@@ -8,8 +8,10 @@
         android:id="@+id/root"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <ProgressBar
+        <ImageView
+            android:id="@+id/image"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_ani_v_star_food"/>
     </com.render.demo.RenderFrameLayout>
 </FrameLayout>
